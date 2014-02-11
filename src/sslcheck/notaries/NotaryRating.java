@@ -7,7 +7,7 @@ public class NotaryRating {
 	private NotaryConfiguration notaryConf;
 	private static NotaryRating instance = null;
 	
-	public static NotaryRating getInstance() { // NotarRating is a singleton!!
+	public static NotaryRating getInstance() { // NotaryRating is a singleton!!
 		if(instance == null)
 			return new NotaryRating();
 		return instance;
