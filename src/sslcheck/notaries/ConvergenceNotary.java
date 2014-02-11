@@ -13,9 +13,4 @@ public class ConvergenceNotary extends Notary {
 		return 0;
 	}
 
-	@Override
-	public void configure(NotaryConfiguration conf) {
-		// Nothing to do here for this notary :)
-	}
-
 }

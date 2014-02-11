@@ -5,7 +5,6 @@ import java.security.cert.Certificate;
 public class ICSINotary extends Notary {
 
 	public ICSINotary() {
-		this.setNotaryName("ICSINotary");
 	}
 
 	@Override
@@ -15,11 +14,6 @@ public class ICSINotary extends Notary {
 			System.out.println("[ICSI] Checking Certificate "+cert.hashCode());
 		}
 		return 0;
-	}
-
-	@Override
-	public void configure(NotaryConfiguration conf) {
-		// Nothing to do here in this Notary :)
 	}
 
 }

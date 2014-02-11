@@ -23,10 +23,4 @@ public abstract class Notary {
 	 * @return Rating-Information derived from Notary Result
 	 */
 	public abstract int check(SSLInfo sslinfo);
-	
-	/**
-	 * Can be used to configure the Notary-Module, if necessary.
-	 * Configuration can be done in globale NotaryConfiguration-File
-	 */
-	public abstract void configure(NotaryConfiguration conf);
 }
