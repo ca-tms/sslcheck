@@ -1,4 +1,4 @@
-package sslcheck.server.system;
+package sslcheck.core;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package sslcheck.server.system;
+package sslcheck.core;
 
 public class NotaryConfigurationException extends Exception {
 
