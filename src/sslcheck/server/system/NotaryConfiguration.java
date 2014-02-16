@@ -8,7 +8,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class NotaryConfiguration {
+	
+	private final static Logger log = LogManager.getLogger("NotaryConfiguration");
 	
 	Properties param = null;
 	
@@ -52,28 +57,22 @@ public class NotaryConfiguration {
 		}
 	}
 	
-	public String getValue(String key, String notary) { // reference javadoc
-		String ret = this.param.getProperty(notary + "." + key); 
+	public String getValue(String key, String notary) throws NotaryConfigurationException { 
+		String ret = this.param.getProperty(notary + "." + key);
+		if(ret==null) {
+			log.error("Property \""+notary+"."+key+"\" not found, trying DefaultNotary."+key+".");
+			return getValue(key);
+		}
 		return ret;
 	}
-
-	public float getRatingFactor(String notary) { 
-		String factor = this.param.getProperty(notary + ".ratingFactor",this.param.getProperty("DefaultNotary.ratingFactor"));
-		return Float.parseFloat(factor.trim()); // TODO catch exceptions..
-	}
 	
-	public int getMinRating(String notary) {
-		String factor = this.param.getProperty(notary + ".resultMin",this.param.getProperty("DefaultNotary.ratingFactor","1"));
-		return Integer.parseInt(factor.trim()); // TODO catch exceptions..
-	}
-
-	public int getMaxRating(String notary) {
-		String factor = this.param.getProperty(notary + ".resultMin",this.param.getProperty("DefaultNotary.ratingFactor","1"));
-		return Integer.parseInt(factor.trim()); // TODO catch exceptions..
-	}
-	
-	public boolean isEnabled(String notary) {
-		return (this.param.getProperty(notary + ".enabled","false").equals("true"));
+	public String getValue(String key) throws NotaryConfigurationException {
+		String ret = this.param.getProperty("DefaultNotary." + key);
+		if(ret==null) {
+			log.error("Property \"DefaultNotary."+key+"\" not found.");
+			throw new NotaryConfigurationException("DefaultNotary."+key+" not found.");
+		}
+		return ret;
 	}
 	
 	public ArrayList<String> getNotariesFromConfiguration() {
