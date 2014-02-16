@@ -1,5 +1,7 @@
 package sslcheck.notaries;
 
+import sslcheck.system.SSLInfo;
+
 public abstract class Notary {
 	
 	/**

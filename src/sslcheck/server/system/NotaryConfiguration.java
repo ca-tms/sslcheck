@@ -1,4 +1,4 @@
-package sslcheck.notaries;
+package sslcheck.server.system;
 
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
@@ -50,6 +50,11 @@ public class NotaryConfiguration {
 				notaryConfs.put(p_name,variables);	
 			}	
 		}
+	}
+	
+	public String getValue(String key, String notary) { // reference javadoc
+		String ret = this.param.getProperty(notary + "." + key); 
+		return ret;
 	}
 
 	public float getRatingFactor(String notary) { 

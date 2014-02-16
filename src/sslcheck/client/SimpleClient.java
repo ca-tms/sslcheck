@@ -13,10 +13,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 import sslcheck.notaries.ConvergenceNotary;
 import sslcheck.notaries.ICSINotary;
-import sslcheck.notaries.NotaryConfiguration;
-import sslcheck.notaries.NotaryManager;
-import sslcheck.notaries.NotaryRating;
-import sslcheck.notaries.SSLInfo;
+import sslcheck.server.system.NotaryConfiguration;
+import sslcheck.server.system.NotaryManager;
+import sslcheck.server.system.NotaryRating;
+import sslcheck.system.SSLInfo;
 
 public class SimpleClient {
 	public static void main(String[] args) {

@@ -2,6 +2,8 @@ package sslcheck.notaries;
 
 import java.security.cert.Certificate;
 
+import sslcheck.system.SSLInfo;
+
 public class ICSINotary extends Notary {
 
 	public ICSINotary() {

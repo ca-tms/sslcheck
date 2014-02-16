@@ -1,8 +1,11 @@
-package sslcheck.notaries;
+package sslcheck.server.system;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import sslcheck.notaries.Notary;
+import sslcheck.system.SSLInfo;
 
 public class NotaryManager extends Notary {
 

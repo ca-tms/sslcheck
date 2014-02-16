@@ -1,4 +1,4 @@
-package sslcheck.notaries;
+package sslcheck.system;
 
 import java.net.URL;
 import java.security.MessageDigest;

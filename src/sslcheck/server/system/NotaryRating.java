@@ -1,4 +1,4 @@
-package sslcheck.notaries;
+package sslcheck.server.system;
 
 import java.util.ArrayList;
 
