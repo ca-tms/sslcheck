@@ -59,7 +59,11 @@ public class NotaryManager extends Notary {
 	public void checkNotaries(SSLInfo sslinfo) { // TODO maybe this can be
 													// executed in parallel?
 		for (Notary n : this.notaries) {
-			notaryRating.addRating(n.getNotaryName(), n.check(sslinfo));
+			try {
+				notaryRating.addRating(n.getNotaryName(), n.check(sslinfo));
+			} catch (NotaryRatingException e) {
+				log.error(e.getMessage());
+			}
 		}
 	}
 
