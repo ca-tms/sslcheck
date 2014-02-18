@@ -1,6 +1,5 @@
 package sslcheck.core;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -17,13 +16,14 @@ public class NotaryManager extends Notary {
 	NotaryConfiguration notaryConf;
 	NotaryRating notaryRating;
 	
-	private final static Logger log = LogManager.getLogger("NotaryManager");
+	private final static Logger log = LogManager.getLogger("core.NotaryManager");
 
 	public NotaryManager() {
 		this.notaries = new ArrayList<Notary>();
 		this.notaryRating = NotaryRating.getInstance();
 		try {
-			this.notaryConf = new NotaryConfiguration();
+			log.trace("Loading Configuration...");
+			this.notaryConf = NotaryConfiguration.getInstance();
 			for (String notary : this.notaryConf.getNotariesFromConfiguration()) {
 				if (this.notaryConf.getValue("enabled", notary).equals("true")) {
 					Notary n = (Notary) Class.forName(
@@ -33,9 +33,6 @@ public class NotaryManager extends Notary {
 
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -56,10 +53,15 @@ public class NotaryManager extends Notary {
 		}
 	}
 
-	public void checkNotaries(SSLInfo sslinfo) { // TODO maybe this can be
+	public void clearNotaryList() {
+		this.notaries.clear();
+	}
+
+	private void _checkNotaries(SSLInfo sslinfo) { // TODO maybe this can be
 													// executed in parallel?
 		for (Notary n : this.notaries) {
 			try {
+				log.trace("Checking notary "+n.getNotaryName());
 				notaryRating.addRating(n.getNotaryName(), n.check(sslinfo));
 			} catch (NotaryRatingException e) {
 				log.error(e.getMessage());
@@ -67,17 +69,9 @@ public class NotaryManager extends Notary {
 		}
 	}
 
-	public Iterator<Notary> notaryIterator() {
-		return this.notaries.iterator();
-	}
-
-	public void clearNotaryList() {
-		this.notaries.clear();
-	}
-
 	@Override
-	public int check(SSLInfo sslinfo) {
-		// TODO Auto-generated method stub
-		return 0;
+	public float check(SSLInfo sslinfo) {
+		this._checkNotaries(sslinfo);
+		return notaryRating.calculateScore();
 	}
 }
