@@ -24,5 +24,5 @@ public abstract class Notary {
 	 * @param sslinfo
 	 * @return Rating-Information derived from Notary Result
 	 */
-	public abstract int check(SSLInfo sslinfo);
+	public abstract float check(SSLInfo sslinfo);
 }
