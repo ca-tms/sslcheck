@@ -9,25 +9,26 @@ public class NotaryRating {
 	
 	private NotaryConfiguration notaryConf;
 	private static NotaryRating instance = null;
+	private ArrayList<Float> ratings = new ArrayList<Float>();
 	
-	private final static Logger log = LogManager.getLogger("NotaryRating");
+	private final static Logger log = LogManager.getLogger("core.NotaryRating");
 	
 	public static NotaryRating getInstance() { // NotaryRating is a singleton!!
 		if(instance == null)
-			return new NotaryRating();
+			instance = new NotaryRating();
 		return instance;
 	}
 	
 	public NotaryRating() {
+		log.debug("Loading Configuration...");
 		this.notaryConf = NotaryConfiguration.getInstance();
 	}
-
-	private ArrayList<Float> ratings = new ArrayList<Float>();
 	
-	public void addRating(String notary, int result) throws NotaryRatingException {
-		result = normalizeResult(notary, result);
+	public void addRating(String notary, float f) throws NotaryRatingException {
+		log.debug("Adding Rating for "+notary+": "+Float.toString(f));
+		f = normalizeResult(notary, f); // Normalisierung, um eine Verrechnung mit anderen Notaries zu ermöglichen
 		try {
-			this.ratings.add(result*((Float.parseFloat(this.notaryConf.getValue("ratingFactor", notary)))));
+			this.ratings.add(f*((Float.parseFloat(this.notaryConf.getValue("ratingFactor", notary)))));
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to float");
 			throw new NotaryRatingException("Error while converting during adding the rating of "+notary);
@@ -41,17 +42,22 @@ public class NotaryRating {
 		this.ratings.clear();
 	}
 	
-	public int calculateScore() {
-		return 0;
+	public float calculateScore() { 
+		float r = 0;
+		for(float f : this.ratings)
+			r += f;
+		return r/this.ratings.size(); // (r1 + r2 + r3 + ... + rn)/n
 	}
 
-	public int normalizeResult(String notary, int check) throws NotaryRatingException {
-		int max;
-		int min;
+	public float normalizeResult(String notary, float f) throws NotaryRatingException {
+		int max_default,max_notary;
+		int min_default,min_notary;
 		try {
-			max = Integer.parseInt(this.notaryConf.getValue("maxRating",notary));
-			min = Integer.parseInt(this.notaryConf.getValue("minRating",notary));
-			return (max-min)*check+min;
+			max_default = Integer.parseInt(this.notaryConf.getValue("maxRating"));
+			min_default = Integer.parseInt(this.notaryConf.getValue("minRating"));
+			max_notary = Integer.parseInt(this.notaryConf.getValue("maxRating",notary));
+			min_notary = Integer.parseInt(this.notaryConf.getValue("minRating",notary));
+			return (max_default-min_default)*(f-min_notary)/(max_notary-min_notary)+min_default;
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to int");
 			throw new NotaryRatingException("Error while converting during normalization.");
