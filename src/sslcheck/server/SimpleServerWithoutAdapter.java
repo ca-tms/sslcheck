@@ -38,21 +38,29 @@ public class SimpleServerWithoutAdapter {
 	    
 		try {
 			log.trace("Connecting to Host...");
-		    SSLSocketFactory factory = HttpsURLConnection.getDefaultSSLSocketFactory();
+		    
+			// Create SSL Connection
+			SSLSocketFactory factory = HttpsURLConnection.getDefaultSSLSocketFactory();
 		    SSLSocket socket;
 		    Certificate[] servercerts = {};
 			socket = (SSLSocket) factory.createSocket("cert-test.sandbox.google.com", 443);
 			socket.startHandshake();
 			SSLSession session = socket.getSession();
+			
+			// Extract Certificates
 			servercerts = session.getPeerCertificates();
 			SSLInfo sslinfo = new SSLInfo(new URL("https://www.google.de/"), (X509Certificate[]) servercerts);
 			
+			// Initialize Notaries by using NotaryManager
+			NotaryManager nm = new NotaryManager();
+			
+			// Print Information about Certificates
 			log.info("Printing Certificates: \n"+sslinfo.toString());
 			
-			log.trace("Checking Certificates...");
-			NotaryManager nm = new NotaryManager();
-			log.info("Rating: "+nm.check(sslinfo));
-			
+			// Check Certificates using NotaryManager
+			log.trace("-- BEGIN -- Checking Certificates...");
+			log.info("Rating: "+sslinfo.getCertificates().checkNotary(nm));
+			log.trace("-- END -- Checking Certificates...");
 			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

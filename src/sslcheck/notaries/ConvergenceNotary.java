@@ -1,18 +1,19 @@
 package sslcheck.notaries;
 
-import java.security.cert.Certificate;
 
-import sslcheck.system.SSLInfo;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import sslcheck.system.X509Certificate;
 
 public class ConvergenceNotary extends Notary {
 
+	private final static Logger log = LogManager.getLogger("notaries.Convergence");
+	
 	@Override
-	public int check(SSLInfo sslinfo) {
+	public float check(X509Certificate c) {
 		// First Phase, just print the certificate to check
-		for(Certificate cert : sslinfo.getCertifcates()) {
-			System.out.println("[Convergence] Checking Certificate "+cert.hashCode());
-		}
-		return 0;
+		log.info("Checking Certificate "+c.getSHA1Fingerprint());
+		return 100;
 	}
-
 }

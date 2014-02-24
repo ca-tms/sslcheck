@@ -1,6 +1,6 @@
 package sslcheck.notaries;
 
-import sslcheck.system.SSLInfo;
+import sslcheck.system.X509Certificate;
 
 public abstract class Notary {
 	
@@ -24,5 +24,5 @@ public abstract class Notary {
 	 * @param sslinfo
 	 * @return Rating-Information derived from Notary Result
 	 */
-	public abstract float check(SSLInfo sslinfo);
+	public abstract float check(X509Certificate c);
 }
