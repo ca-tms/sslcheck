@@ -55,9 +55,9 @@ public class ICSINotary extends Notary {
 		if (l.getResult() != Rcode.NXDOMAIN && records.length > 0) {
 			// --- 1 --- Checking A-RR
 			log.trace("--- DONE --- Checking A-RR.");
-			for (int i=0;i<records.length;i++) { // records.length == 1 ->
-													// should always be
-													// true...
+			for (int i = 0; i < records.length; i++) { // records.length == 1 ->
+														// should always be
+														// true...
 				ARecord a = (ARecord) records[i];
 				if (a.getAddress().getHostAddress().equals("127.0.0.1")) {
 					result += 5;
@@ -79,7 +79,7 @@ public class ICSINotary extends Notary {
 			l = new Lookup(hash + ".notary.icsi.berkeley.edu", Type.TXT);
 			records = l.run();
 			String s = "";
-			for (int i=0;i<records.length;i++) {
+			for (int i = 0; i < records.length; i++) {
 				TXTRecord txt = (TXTRecord) records[i];
 				for (Iterator<?> j = txt.getStrings().iterator(); j.hasNext();)
 					s += j.next();
@@ -89,8 +89,8 @@ public class ICSINotary extends Notary {
 			if (params.length != 5) {
 				log.error("Recieved malformed txt-RR: " + s);
 			} else {
-				float result_last=0,result_first=0,result_times=0;
-				float last_seen=0, first_seen=0;
+				float result_last = 0, result_first = 0, result_times = 0;
+				float last_seen = 0, first_seen = 0;
 				for (String param : params) {// params should be: version=1
 												// first_seen=15387
 												// last_seen=15646
@@ -108,55 +108,78 @@ public class ICSINotary extends Notary {
 							// be added
 							// Lowest Value: 15339
 							// Highest Value: Today
-							// ... but: Certificate first seen today means, that the
+							// ... but: Certificate first seen today means, that
+							// the
 							// certificate is not that old! This could possibly
 							// be an attack!
-							java.util.Date date= new java.util.Date();
-							float max_seen = date.getTime()/1000/60/60/24;
+							java.util.Date date = new java.util.Date();
+							float max_seen = date.getTime() / 1000 / 60 / 60
+									/ 24;
 							float min_seen = max_seen - 30;
 							last_seen = Float.parseFloat(p[1]);
-							
+
 							// [min_seen,max_seen] —> [0,10]
-							result_last = 10*(last_seen - min_seen)/(max_seen - min_seen);
-							if(result_last<0) result_last = 0;
-							
-							log.debug("last_seen: (min,max,last,result) = ("+min_seen+","+max_seen+","+last_seen+","+result_last+")");
-							
+							result_last = 10 * (last_seen - min_seen)
+									/ (max_seen - min_seen);
+							if (result_last < 0)
+								result_last = 0;
+
+							log.debug("last_seen: (min,max,last,result) = ("
+									+ min_seen + "," + max_seen + ","
+									+ last_seen + "," + result_last + ")");
+
 						} else if (p[0].equals("first_seen")) {
 							// The older the certificate, the lower the score to
-							// be added. Optimal "age" is 1 year, Maximum "age" is 2 years.
+							// be added. Optimal "age" is 1 year, Maximum "age"
+							// is 2 years.
 							// For Pseudocode see Documentation.
-							java.util.Date date= new java.util.Date();
-							float max_seen = date.getTime()/1000/60/60/24;
-							
-							float min_seen = max_seen - 2*356;
+							java.util.Date date = new java.util.Date();
+							float max_seen = date.getTime() / 1000 / 60 / 60
+									/ 24;
+
+							float min_seen = max_seen - 2 * 356;
 							float optimal_seen = max_seen - 356;
 							first_seen = Long.parseLong(p[1]);
-							
-							if(first_seen==optimal_seen) {
+
+							if (first_seen == optimal_seen) {
 								result_first = 10;
-							}else if(first_seen>optimal_seen) {
-								result_first = 10 - 10*(first_seen - optimal_seen)/(max_seen - optimal_seen);
-							}else{
-								result_first = 10*(first_seen - min_seen)/(optimal_seen- min_seen);
+							} else if (first_seen > optimal_seen) {
+								result_first = 10 - 10
+										* (first_seen - optimal_seen)
+										/ (max_seen - optimal_seen);
+							} else {
+								result_first = 10 * (first_seen - min_seen)
+										/ (optimal_seen - min_seen);
 							}
-							
-							log.debug("first_seen: (min,max,optimal,last,result) = ("+min_seen+","+max_seen+","+optimal_seen+","+first_seen+","+result_first+")");
-							
+
+							log.debug("first_seen: (min,max,optimal,first,result) = ("
+									+ min_seen
+									+ ","
+									+ max_seen
+									+ ","
+									+ optimal_seen
+									+ ","
+									+ first_seen
+									+ ","
+									+ result_first + ")");
+
 						} else if (p[0].equals("times_seen")) {
 							// The higher the certificate, the higher the score
 							// to be added
-							// Highest Value: last_seen - first_seen; today - 15339
+							// Highest Value: last_seen - first_seen; today -
+							// 15339
 							// Lowest Value: 0
 							float max_seen = 0, times_seen = 0;
-							if(first_seen>0 && last_seen>0) {
+							if (first_seen > 0 && last_seen > 0) {
 								max_seen = last_seen - first_seen;
 								times_seen = Float.parseFloat(p[1]);
-								result_times = 10*times_seen/max_seen;
+								result_times = 10 * times_seen / max_seen;
 							}
-							
-							log.debug("times_seen: (max,times,result) = ("+max_seen+","+times_seen+","+result_times+")");
-							
+
+							log.debug("times_seen: (max,times,result) = ("
+									+ max_seen + "," + times_seen + ","
+									+ result_times + ")");
+
 						} else if (p[0].equals("validated")) {
 							// 1 -> Certificate can be validated using Mozilla
 							// Root Store => +10
@@ -170,13 +193,13 @@ public class ICSINotary extends Notary {
 						}
 					}
 				}
-				if(result_last > 0 && result_first > 0)
+				if (result_last > 0 && result_first > 0)
 					result += result_last + result_first + result_times;
 			}
-			log.debug("Calculated score: "+result);
+			log.debug("Calculated score: " + result);
 			log.trace("--- DONE --- Checking TXT-RR.");
 		} else {
-			log.error("Received NXDOMAIN for Hash "+hash+".");
+			log.error("Received NXDOMAIN for Hash " + hash + ".");
 			log.trace("--- DONE --- Checking A-RR");
 		}
 		return result;
