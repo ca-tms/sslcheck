@@ -10,6 +10,17 @@ import sslcheck.notaries.Notary;
 import sslcheck.system.SSLInfo;
 import sslcheck.system.X509Certificate;
 
+/**
+ * NotaryManager acts as a proxy class for normal notaries. It creates every
+ * enabled notary-objects and calls the check-Method to check the certificate
+ * the notaryManager gets from the caller itself.
+ * 
+ * It enables a caller to handle multiple notaries by just using one notary. It
+ * itself can be used as a notary.
+ * 
+ * @author letzkus
+ * 
+ */
 public class NotaryManager extends Notary {
 
 	ArrayList<Notary> notaries;
@@ -21,6 +32,10 @@ public class NotaryManager extends Notary {
 	private final static Logger log = LogManager
 			.getLogger("core.NotaryManager");
 
+	/**
+	 * The constructor initializes the notaries based on the
+	 * notaries.properties-File.
+	 */
 	public NotaryManager() {
 		this.setNotaryName("NotaryManager"); // We have to set the name
 												// manually, since it is not
@@ -56,6 +71,13 @@ public class NotaryManager extends Notary {
 		}
 	}
 
+	/**
+	 * Enables a already existing notary. If you want to simply add a new
+	 * notary, use addNotary(Notary n).
+	 * 
+	 * @param nn
+	 *            The name of a notary to be enabled.
+	 */
 	public void enableNotary(String nn) {
 		for (Notary n : this.notaries) {
 			if (n.getNotaryName().equals(nn)) {
@@ -66,6 +88,12 @@ public class NotaryManager extends Notary {
 		log.error("Enabling Notary " + nn + " failed: Notary not found.");
 	}
 
+	/**
+	 * Disables a notary.
+	 * 
+	 * @param nn
+	 *            the name of the notary to be disabled.
+	 */
 	public void disableNotary(String nn) {
 		for (Notary n : this.enabledNotaries) {
 			if (n.getNotaryName().equals(nn)) {
@@ -76,6 +104,12 @@ public class NotaryManager extends Notary {
 		}
 	}
 
+	/**
+	 * Adds a new notary to the list of existing and enabled notaries.
+	 * 
+	 * @param n
+	 *            the notary object to be added
+	 */
 	public void addNotary(Notary n) {
 		if (n != null) {
 			log.trace("Adding notary " + n.getNotaryName());
@@ -84,8 +118,15 @@ public class NotaryManager extends Notary {
 		}
 	}
 
-	private void _checkNotaries(X509Certificate c) { // TODO maybe this can be
-														// executed in parallel?
+	/**
+	 * Checks the certificate by calling check-Method on all enabled Notaries
+	 * 
+	 * @param c
+	 *            the X509Certificate to check
+	 * @return Validity score
+	 */
+	@Override
+	public float check(X509Certificate c) {
 		for (Notary n : this.enabledNotaries) {
 			try {
 				log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
@@ -95,11 +136,6 @@ public class NotaryManager extends Notary {
 				log.error(e.getMessage());
 			}
 		}
-	}
-
-	@Override
-	public float check(X509Certificate c) {
-		this._checkNotaries(c);
 		return notaryRating.calculateScore();
 	}
 }

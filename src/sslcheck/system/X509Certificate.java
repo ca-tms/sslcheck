@@ -34,19 +34,20 @@ public class X509Certificate {
 	 */
 	public static X509Certificate constructX509CertificatePath(
 			java.security.cert.X509Certificate[] certPath) {
-		log.debug("Constructing X509CertificatePatch with length "+certPath.length);
+		log.debug("Constructing X509CertificatePatch with length "
+				+ certPath.length);
 		X509Certificate lastCert = new X509Certificate(
 				certPath[certPath.length - 1]);
-		log.debug("Adding certificate "+(certPath.length-1)+":");
-		log.debug("--- Subject: "+lastCert.getSubject());
-		log.debug("--- Issuer: "+lastCert.getIssuer());
-		log.debug("--- hasIssuerCert: "+lastCert.hasIssuerCert());
+		log.debug("Adding certificate " + (certPath.length - 1) + ":");
+		log.debug("--- Subject: " + lastCert.getSubject());
+		log.debug("--- Issuer: " + lastCert.getIssuer());
+		log.debug("--- hasIssuerCert: " + lastCert.hasIssuerCert());
 		for (int i = certPath.length - 2; i >= 0; i--) {
 			lastCert = new X509Certificate(certPath[i], lastCert);
-			log.debug("Adding certificate "+i+":");
-			log.debug("--- Subject: "+lastCert.getSubject());
-			log.debug("--- Issuer: "+lastCert.getIssuer());
-			log.debug("--- hasIssuerCert: "+lastCert.hasIssuerCert());
+			log.debug("Adding certificate " + i + ":");
+			log.debug("--- Subject: " + lastCert.getSubject());
+			log.debug("--- Issuer: " + lastCert.getIssuer());
+			log.debug("--- hasIssuerCert: " + lastCert.hasIssuerCert());
 		}
 
 		return lastCert;
@@ -165,8 +166,7 @@ public class X509Certificate {
 			// TODO Check signature
 			return false;
 		} // ... or is the issuer unknown?
-		this.log
-				.warn("There were no further intermediate or root certificates given during SSL handshake!");
+		this.log.warn("There were no further intermediate or root certificates given during SSL handshake!");
 		return false;
 	}
 
@@ -211,8 +211,8 @@ public class X509Certificate {
 	 */
 	public float checkNotary(Notary n) {
 		float result;
-		log.trace("-- BEGIN -- Checking certificate " + this.getSHA1Fingerprint()
-				+ " using " + n.getNotaryName());
+		log.trace("-- BEGIN -- Checking certificate "
+				+ this.getSHA1Fingerprint() + " using " + n.getNotaryName());
 
 		if (this.hasIssuerCert()) {
 			result = n.check(this) + this.getIssuerCert().checkNotary(n);
@@ -220,8 +220,8 @@ public class X509Certificate {
 			result = n.check(this);
 		}
 
-		log.trace("-- DONE -- Checking certificate " + this.getSHA1Fingerprint()
-				+ " using " + n.getNotaryName());
+		log.trace("-- DONE -- Checking certificate "
+				+ this.getSHA1Fingerprint() + " using " + n.getNotaryName());
 
 		return result;
 	}

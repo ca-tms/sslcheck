@@ -19,49 +19,53 @@ import sslcheck.core.NotaryManager;
 import sslcheck.system.SSLInfo;
 
 /**
- * This is a simple Server accessing all objects in a direct way without implementing the adapter
- * mentioned in the documentation. This server does not provide any interface but does everything
- * automatically. It outputs everything to stdout. This server is useful for debugging and
- * testing purposes and should not be used in any production environment. 
+ * This is a simple Server accessing all objects in a direct way without
+ * implementing the adapter mentioned in the documentation. This server does not
+ * provide any interface but does everything automatically. It outputs
+ * everything to stdout. This server is useful for debugging and testing
+ * purposes and should not be used in any production environment.
  * 
  * @author letzkus
- *
+ * 
  */
 public class SimpleServerWithoutAdapter {
-	
+
 	private final static Logger log = LogManager.getRootLogger();
-	
+
 	public static void main(String[] args) {
 		log.trace("Initializing...");
-		//NotaryConfiguration notaryConf = NotaryConfiguration.getInstance();
-		//NotaryRating notaryRating = NotaryRating.getInstance();
-	    
+		// NotaryConfiguration notaryConf = NotaryConfiguration.getInstance();
+		// NotaryRating notaryRating = NotaryRating.getInstance();
+
 		try {
 			log.trace("Connecting to Host...");
-		    
+
 			// Create SSL Connection
-			SSLSocketFactory factory = HttpsURLConnection.getDefaultSSLSocketFactory();
-		    SSLSocket socket;
-		    Certificate[] servercerts = {};
-			socket = (SSLSocket) factory.createSocket("cert-test.sandbox.google.com", 443);
+			SSLSocketFactory factory = HttpsURLConnection
+					.getDefaultSSLSocketFactory();
+			SSLSocket socket;
+			Certificate[] servercerts = {};
+			socket = (SSLSocket) factory.createSocket(
+					"cert-test.sandbox.google.com", 443);
 			socket.startHandshake();
 			SSLSession session = socket.getSession();
-			
+
 			// Extract Certificates
 			servercerts = session.getPeerCertificates();
-			SSLInfo sslinfo = new SSLInfo(new URL("https://www.google.de/"), (X509Certificate[]) servercerts);
-			
+			SSLInfo sslinfo = new SSLInfo(new URL("https://www.google.de/"),
+					(X509Certificate[]) servercerts);
+
 			// Initialize Notaries by using NotaryManager
 			NotaryManager nm = new NotaryManager();
-			
+
 			// Print Information about Certificates
-			log.info("Printing Certificates: \n"+sslinfo.toString());
-			
+			// log.info("Printing Certificates: \n"+sslinfo.toString());
+
 			// Check Certificates using NotaryManager
 			log.trace("-- BEGIN -- Checking Certificates...");
-			log.info("Rating: "+sslinfo.getCertificates().checkNotary(nm));
+			log.info("Rating: " + sslinfo.getCertificates().checkNotary(nm));
 			log.trace("-- END -- Checking Certificates...");
-			
+
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e1) {

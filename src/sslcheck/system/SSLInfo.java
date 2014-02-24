@@ -7,61 +7,65 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * SSLInfo is a class used for storing HTTPS/SSL-related information such as URL of the website
- * or the certificates given by the server during the SSL Session. It does not provide any real
- * functionality.
+ * SSLInfo is a class used for storing HTTPS/SSL-related information such as URL
+ * of the website or the certificates given by the server during the SSL
+ * Session. It does not provide any real functionality.
  * 
  * @author letzkus
- *
+ * 
  */
 public class SSLInfo {
 
 	URL url;
 	X509Certificate certificates;
-	
+
 	public X509Certificate getCertificates() {
 		return certificates;
 	}
 
-	private final static Logger log = LogManager.getLogger("core.NotaryManager");
+	private final static Logger log = LogManager
+			.getLogger("core.NotaryManager");
 
 	public SSLInfo(URL url, java.security.cert.X509Certificate[] servercerts) {
 		this.url = url;
-		this.certificates = X509Certificate.constructX509CertificatePath(servercerts);
-	}	
-	
-	public URL getURL(){
-		return this.url;
+		this.certificates = X509Certificate
+				.constructX509CertificatePath(servercerts);
 	}
 	
 	/**
-	 * Returns all parameters as a debug output
+	 * Returns the URL
+	 * @return the url
+	 */
+	public URL getURL() {
+		return this.url;
+	}
+
+	/**
+	 * Returns all parameters as a output
 	 */
 	@Override
 	public String toString() {
-		String str ="";
-		str += "URL: "+this.url+"\n";
-		str += "Certificates: "+this.certificates.getAvailPathLen()+"\n";
+		String str = "";
+		str += "URL: " + this.url + "\n";
+		str += "Certificates: " + this.certificates.getAvailPathLen() + "\n";
 		X509Certificate cer = this.certificates;
-		while(cer.hasIssuerCert()) {
+		while (cer.hasIssuerCert()) {
 			str += "----------------------------------------------------\n";
 			try {
-				str += "Subject: "+cer.getSubject()+"\n";
-				str += "Issuer: "+cer.getIssuer()+"\n";
-				str += "SHA-1 Hash: "+cer.getSHA1Fingerprint()+"\n";
+				str += "Subject: " + cer.getSubject() + "\n";
+				str += "Issuer: " + cer.getIssuer() + "\n";
+				str += "SHA-1 Hash: " + cer.getSHA1Fingerprint() + "\n";
 			} catch (Exception e) {
-				str += "SHA-1 Hash not available: "+e+"\n";
+				str += "SHA-1 Hash not available: " + e + "\n";
 			}
 			cer = cer.getIssuerCert();
 		}
 		str += "----------------------------------------------------\n";
 		return str;
 	}
-	
-	/**
-	 * Returns 
-	 */
-	
 
+	/**
+	 * Returns
+	 */
 
 }
