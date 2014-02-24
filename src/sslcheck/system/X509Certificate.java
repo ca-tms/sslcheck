@@ -1,7 +1,6 @@
 package sslcheck.system;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +17,7 @@ import sslcheck.notaries.Notary;
  */
 public class X509Certificate {
 
+	private String presumedHost;
 	private java.security.cert.X509Certificate x509cert;
 	private X509Certificate issuerX509Cert;
 	private final static Logger log = LogManager
@@ -33,7 +33,7 @@ public class X509Certificate {
 	 *         certification path
 	 */
 	public static X509Certificate constructX509CertificatePath(
-			java.security.cert.X509Certificate[] certPath) {
+			java.security.cert.X509Certificate[] certPath, String presumedHost) {
 		log.debug("Constructing X509CertificatePatch with length "
 				+ certPath.length);
 		X509Certificate lastCert = new X509Certificate(
@@ -50,6 +50,8 @@ public class X509Certificate {
 			log.debug("--- hasIssuerCert: " + lastCert.hasIssuerCert());
 		}
 
+		lastCert.setHost(presumedHost);
+		
 		return lastCert;
 	}
 
@@ -166,7 +168,7 @@ public class X509Certificate {
 			// TODO Check signature
 			return false;
 		} // ... or is the issuer unknown?
-		this.log.warn("There were no further intermediate or root certificates given during SSL handshake!");
+		log.warn("There were no further intermediate or root certificates given during SSL handshake!");
 		return false;
 	}
 
@@ -199,6 +201,23 @@ public class X509Certificate {
 		if (this.hasIssuerCert())
 			return this.issuerX509Cert;
 		return null;
+	}
+	
+	/**
+	 * Returns the hostname assumed to belong the certificate
+	 * @return hostname
+	 */
+	public String getPresumedHost() {
+		return presumedHost;
+	}
+
+	/** 
+	 * Sets the hostname assumed to belong the certificate.
+	 * Do not use this in an unsafe environment!
+	 * @param assumedHost
+	 */
+	public void setHost(String presumedHost) {
+		this.presumedHost = presumedHost;
 	}
 
 	/**

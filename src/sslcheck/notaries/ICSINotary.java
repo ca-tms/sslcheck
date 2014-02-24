@@ -12,6 +12,7 @@ public class ICSINotary extends Notary {
 	@Override
 	public float check(X509Certificate c) {
 		// First Phase, just print the certificate to check
+		log.info("Checking Host: "+c.getPresumedHost());
 		log.info("Checking Certificate "+c.getSHA1Fingerprint());
 		return 100;
 	}

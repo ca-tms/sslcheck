@@ -3,9 +3,6 @@ package sslcheck.system;
 import java.net.URL;
 import sslcheck.system.X509Certificate;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * SSLInfo is a class used for storing HTTPS/SSL-related information such as URL
  * of the website or the certificates given by the server during the SSL
@@ -23,13 +20,10 @@ public class SSLInfo {
 		return certificates;
 	}
 
-	private final static Logger log = LogManager
-			.getLogger("core.NotaryManager");
-
 	public SSLInfo(URL url, java.security.cert.X509Certificate[] servercerts) {
 		this.url = url;
 		this.certificates = X509Certificate
-				.constructX509CertificatePath(servercerts);
+				.constructX509CertificatePath(servercerts, url.getHost());
 	}
 	
 	/**

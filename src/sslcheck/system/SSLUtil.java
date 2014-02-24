@@ -5,8 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-import org.apache.logging.log4j.Logger;
-
 public class SSLUtil {
 	/**
 	 * Calculates Thumbprint of given Certificate
