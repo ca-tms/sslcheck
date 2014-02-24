@@ -125,11 +125,11 @@ public class NotaryManager extends Notary {
 	 * @return Validity score
 	 */
 	@Override
-	public float check(X509Certificate c) {
+	public float check(String h, X509Certificate c) {
 		for (Notary n : this.enabledNotaries) {
 			try {
 				log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
-				notaryRating.addRating(n.getNotaryName(), n.check(c));
+				notaryRating.addRating(n.getNotaryName(), n.check(h, c));
 				log.trace("-- END -- Checking notary " + n.getNotaryName());
 			} catch (NotaryRatingException e) {
 				log.error(e.getMessage());

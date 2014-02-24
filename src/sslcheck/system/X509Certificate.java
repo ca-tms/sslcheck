@@ -6,18 +6,15 @@ import java.security.cert.CertificateEncodingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sslcheck.notaries.Notary;
-
 /**
- * X509Certificate represents an Certificate which was given during an SSL
- * session from the server to the client.
+ * X509Certificate represents an Certificate which was retrieved during an SSL
+ * session from the server.
  * 
  * @author letzkus
  * 
  */
 public class X509Certificate {
 
-	private String presumedHost;
 	private java.security.cert.X509Certificate x509cert;
 	private X509Certificate issuerX509Cert;
 	private final static Logger log = LogManager
@@ -33,7 +30,7 @@ public class X509Certificate {
 	 *         certification path
 	 */
 	public static X509Certificate constructX509CertificatePath(
-			java.security.cert.X509Certificate[] certPath, String presumedHost) {
+			java.security.cert.X509Certificate[] certPath) {
 		log.debug("Constructing X509CertificatePatch with length "
 				+ certPath.length);
 		X509Certificate lastCert = new X509Certificate(
@@ -49,8 +46,6 @@ public class X509Certificate {
 			log.debug("--- Issuer: " + lastCert.getIssuer());
 			log.debug("--- hasIssuerCert: " + lastCert.hasIssuerCert());
 		}
-
-		lastCert.setHost(presumedHost);
 		
 		return lastCert;
 	}
@@ -203,48 +198,6 @@ public class X509Certificate {
 		return null;
 	}
 	
-	/**
-	 * Returns the hostname assumed to belong the certificate
-	 * @return hostname
-	 */
-	public String getPresumedHost() {
-		return presumedHost;
-	}
-
-	/** 
-	 * Sets the hostname assumed to belong the certificate.
-	 * Do not use this in an unsafe environment!
-	 * @param assumedHost
-	 */
-	public void setHost(String presumedHost) {
-		this.presumedHost = presumedHost;
-	}
-
-	/**
-	 * Checks the certificate using the given notary
-	 * 
-	 * @param n
-	 *            The Notary used to check the certificate
-	 * @return Validity Score s, whereas DefaultNotary.minScore < s <
-	 *         DefaultNotary.maxScore
-	 */
-	public float checkNotary(Notary n) {
-		float result;
-		log.trace("-- BEGIN -- Checking certificate "
-				+ this.getSHA1Fingerprint() + " using " + n.getNotaryName());
-
-		if (this.hasIssuerCert()) {
-			result = n.check(this) + this.getIssuerCert().checkNotary(n);
-		} else {
-			result = n.check(this);
-		}
-
-		log.trace("-- DONE -- Checking certificate "
-				+ this.getSHA1Fingerprint() + " using " + n.getNotaryName());
-
-		return result;
-	}
-
 	public String toString() {
 		String msg = "";
 		msg += "";

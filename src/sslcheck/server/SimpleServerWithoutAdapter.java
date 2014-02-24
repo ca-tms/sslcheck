@@ -63,7 +63,7 @@ public class SimpleServerWithoutAdapter {
 
 			// Check Certificates using NotaryManager
 			log.trace("-- BEGIN -- Checking Certificates...");
-			log.info("Rating: " + sslinfo.getCertificates().checkNotary(nm));
+			log.info("Rating: " + sslinfo.validateCertificates(nm));
 			log.trace("-- END -- Checking Certificates...");
 
 		} catch (UnknownHostException e) {

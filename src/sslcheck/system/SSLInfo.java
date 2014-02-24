@@ -1,6 +1,8 @@
 package sslcheck.system;
 
 import java.net.URL;
+
+import sslcheck.notaries.Notary;
 import sslcheck.system.X509Certificate;
 
 /**
@@ -23,7 +25,11 @@ public class SSLInfo {
 	public SSLInfo(URL url, java.security.cert.X509Certificate[] servercerts) {
 		this.url = url;
 		this.certificates = X509Certificate
-				.constructX509CertificatePath(servercerts, url.getHost());
+				.constructX509CertificatePath(servercerts);
+	}
+	
+	public float validateCertificates(Notary n) {
+		return n.check(this.url.getHost(), this.certificates);
 	}
 	
 	/**

@@ -24,5 +24,5 @@ public abstract class Notary {
 	 * @param sslinfo
 	 * @return Rating-Information derived from Notary Result
 	 */
-	public abstract float check(X509Certificate c);
+	public abstract float check(String h, X509Certificate c);
 }

@@ -11,9 +11,9 @@ public class ConvergenceNotary extends Notary {
 			.getLogger("notaries.Convergence");
 
 	@Override
-	public float check(X509Certificate c) {
+	public float check(String h, X509Certificate c) {
 		// First Phase, just print the certificate to check
-		log.info("Checking Host: " + c.getPresumedHost());
+		log.info("Checking Host: " + h);
 		log.info("Checking Certificate " + c.getSHA1Fingerprint());
 
 		// Note to myself: What todo if getPresumedHost() == null -> Certificate
