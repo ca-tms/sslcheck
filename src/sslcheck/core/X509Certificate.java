@@ -1,4 +1,4 @@
-package sslcheck.system;
+package sslcheck.core;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;

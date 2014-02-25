@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
-import sslcheck.system.SSLInfo;
+import sslcheck.core.SSLInfo;
 
 /**
  * This is a simple Server accessing all objects in a direct way without

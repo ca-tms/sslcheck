@@ -1,4 +1,4 @@
-package sslcheck.system;
+package sslcheck.core;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +11,7 @@ public class SSLUtil {
 	 * 
 	 * @param certificates
 	 *            Certificate
-	 * @return SHA-1 Fingerprint of Certificate
+	 * @return Fingerprint of Certificate
 	 * @throws NoSuchAlgorithmException
 	 * @throws CertificateEncodingException
 	 * @url 

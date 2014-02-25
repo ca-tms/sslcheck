@@ -1,6 +1,6 @@
 package sslcheck.notaries;
 
-import sslcheck.system.X509Certificate;
+import sslcheck.core.X509Certificate;
 
 public abstract class Notary {
 	

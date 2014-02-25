@@ -7,7 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.notaries.Notary;
-import sslcheck.system.X509Certificate;
 
 /**
  * NotaryManager acts as a proxy class for normal notaries. It creates every

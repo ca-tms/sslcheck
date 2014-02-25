@@ -1,9 +1,8 @@
-package sslcheck.system;
+package sslcheck.core;
 
 import java.net.URL;
 
 import sslcheck.notaries.Notary;
-import sslcheck.system.X509Certificate;
 
 /**
  * SSLInfo is a class used for storing HTTPS/SSL-related information such as URL
@@ -27,13 +26,14 @@ public class SSLInfo {
 		this.certificates = X509Certificate
 				.constructX509CertificatePath(servercerts);
 	}
-	
+
 	public float validateCertificates(Notary n) {
 		return n.check(this.url.getHost(), this.certificates);
 	}
-	
+
 	/**
 	 * Returns the URL
+	 * 
 	 * @return the url
 	 */
 	public URL getURL() {

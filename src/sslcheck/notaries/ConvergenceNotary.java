@@ -3,7 +3,7 @@ package sslcheck.notaries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sslcheck.system.X509Certificate;
+import sslcheck.core.X509Certificate;
 
 public class ConvergenceNotary extends Notary {
 

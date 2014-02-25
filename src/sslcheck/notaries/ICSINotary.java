@@ -13,7 +13,7 @@ import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 
-import sslcheck.system.X509Certificate;
+import sslcheck.core.X509Certificate;
 
 public class ICSINotary extends Notary {
 
