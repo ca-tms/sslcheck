@@ -38,13 +38,15 @@ public class X509Certificate {
 		log.debug("Adding certificate " + (certPath.length - 1) + ":");
 		log.debug("--- Subject: " + lastCert.getSubject());
 		log.debug("--- Issuer: " + lastCert.getIssuer());
-		log.debug("--- hasIssuerCert: " + lastCert.hasIssuerCert());
+		log.debug("--- SHA1: "+lastCert.getSHA1Fingerprint());
+		log.debug("--- MD5: "+lastCert.getMD5Fingerprint());
 		for (int i = certPath.length - 2; i >= 0; i--) {
 			lastCert = new X509Certificate(certPath[i], lastCert);
 			log.debug("Adding certificate " + i + ":");
 			log.debug("--- Subject: " + lastCert.getSubject());
 			log.debug("--- Issuer: " + lastCert.getIssuer());
-			log.debug("--- hasIssuerCert: " + lastCert.hasIssuerCert());
+			log.debug("--- SHA1: "+lastCert.getSHA1Fingerprint());
+			log.debug("--- MD5: "+lastCert.getMD5Fingerprint());
 		}
 		
 		return lastCert;
@@ -113,7 +115,7 @@ public class X509Certificate {
 	}
 
 	public String getMD5Fingerprint() {
-		return getFingerprint("MD-5");
+		return getFingerprint("MD5");
 	}
 
 	public String getSHA1Fingerprint() {
