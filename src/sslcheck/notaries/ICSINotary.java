@@ -54,7 +54,6 @@ public class ICSINotary extends Notary {
 		Record[] records = l.run();
 		if (l.getResult() != Rcode.NXDOMAIN && records.length > 0) {
 			// --- 1 --- Checking A-RR
-			log.trace("--- DONE --- Checking A-RR.");
 			for (int i = 0; i < records.length; i++) { // records.length == 1 ->
 														// should always be
 														// true...
@@ -68,11 +67,12 @@ public class ICSINotary extends Notary {
 				} else {
 					log.error("Recieved malformed IPADDR"
 							+ a.getAddress().getHostAddress());
-				}
+				}				
 			}
 			result /= records.length; // if there were multiple A-RRs added,
 										// calculate average.
-			log.debug("Result after checking A-RRs: " + Float.toString(result));
+			log.debug("Result after checking all A-RRs: " + Float.toString(result));
+			log.trace("--- DONE --- Checking A-RR.");
 
 			log.trace("--- BEGIN --- Checking TXT-RR.");
 			// --- 2 --- Checking TXT-RR
