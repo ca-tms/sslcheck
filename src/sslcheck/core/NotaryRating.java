@@ -25,9 +25,10 @@ public class NotaryRating {
 	}
 	
 	public void addRating(String notary, float f) throws NotaryRatingException {
-		log.debug("Adding Rating for "+notary+": "+Float.toString(f));
-		f = normalizeResult(notary, f); // Normalisierung, um eine Verrechnung mit anderen Notaries zu ermöglichen
 		try {
+			
+			log.debug("Adding Rating for "+notary+": "+Float.toString(f)+" [max: "+this.notaryConf.getValue("maxRating", notary)+" | min: "+this.notaryConf.getValue("minRating", notary)+"]");
+			f = normalizeResult(notary, f); // Normalisierung, um eine Verrechnung mit anderen Notaries zu ermöglichen
 			this.ratings.add(f*((Float.parseFloat(this.notaryConf.getValue("ratingFactor", notary)))));
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to float");
