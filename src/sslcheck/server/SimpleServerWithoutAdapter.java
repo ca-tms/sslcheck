@@ -69,13 +69,13 @@ public class SimpleServerWithoutAdapter {
 			final SSLSocketFactory factory = sslContext.getSocketFactory();
 			SSLSocket socket;
 			Certificate[] servercerts = {};
-			socket = (SSLSocket) factory.createSocket("cacert.org", 443);
+			socket = (SSLSocket) factory.createSocket("wikipedia.org", 443);
 			socket.startHandshake();
 			SSLSession session = socket.getSession();
 
 			// Extract Certificates
 			servercerts = session.getPeerCertificates();
-			SSLInfo sslinfo = new SSLInfo(new URL("https://www.google.de/"),
+			SSLInfo sslinfo = new SSLInfo("www.google.de",
 					(X509Certificate[]) servercerts);
 
 			// Initialize Notaries by using NotaryManager

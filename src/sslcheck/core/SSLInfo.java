@@ -14,30 +14,21 @@ import sslcheck.notaries.Notary;
  */
 public class SSLInfo {
 
-	URL url;
+	String url;
 	X509Certificate certificates;
 
 	public X509Certificate getCertificates() {
 		return certificates;
 	}
 
-	public SSLInfo(URL url, java.security.cert.X509Certificate[] servercerts) {
+	public SSLInfo(String url, java.security.cert.X509Certificate[] servercerts) {
 		this.url = url;
 		this.certificates = X509Certificate
 				.constructX509CertificatePath(servercerts);
 	}
 
 	public float validateCertificates(Notary n) {
-		return n.check(this.url.getHost(), this.certificates);
-	}
-
-	/**
-	 * Returns the URL
-	 * 
-	 * @return the url
-	 */
-	public URL getURL() {
-		return this.url;
+		return n.check(this.url, this.certificates);
 	}
 
 	/**
