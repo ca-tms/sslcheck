@@ -2,7 +2,6 @@ package sslcheck.server;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +21,8 @@ import org.apache.logging.log4j.Logger;
 import sslcheck.core.NotaryManager;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSInfo;
+//import sslcheck.notaries.ICSINotary; // see lines 82-90
+//import sslcheck.notaries.ConvergenceNotary; // see lines 82-90
 
 /**
  * This is a simple Server accessing all objects in a direct way without
@@ -81,8 +82,13 @@ public class SimpleServerWithoutAdapter {
 					(X509Certificate[]) servercerts);
 
 			// Initialize Notaries by using NotaryManager
+			// Either...
 			NotaryManager nm = new NotaryManager();
-
+			// or...
+			// ICSINotary nm = new ICSINotary();
+			// or...
+			// ConvergenceNotary nm = new ConvergenceNotary();
+			
 			// Print Information about Certificates
 			// log.info("Printing Certificates: \n"+sslinfo.toString());
 
