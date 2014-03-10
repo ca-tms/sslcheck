@@ -59,7 +59,10 @@ public class NotaryRating {
 		float r = 0;
 		for (float f : this.ratings)
 			r += f;
-		this._RATING_ = r / this.ratings.size(); // (r1 + r2 + r3 + ... + rn)/n
+		if(this.ratings.size()>0)
+			this._RATING_ = r / this.ratings.size(); // (r1 + r2 + r3 + ... + rn)/n
+		else
+			this._RATING_ = 0;
 		return this._RATING_;
 	}
 
