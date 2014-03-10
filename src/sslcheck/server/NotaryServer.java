@@ -42,15 +42,16 @@ public class NotaryServer implements Notary {
 		
 		try {
 			if(nr.isPossiblyTrusted()) {
+				log.info("Certificate "+ssli.getCertificates().getSHA1Fingerprint()+" is valid.");
 				return ValidationResult.TRUSTED;
 			}else{
+				log.info("Certificate "+ssli.getCertificates().getSHA1Fingerprint()+" is invalid.");
 				return ValidationResult.UNTRUSTED;
 			}
 		} catch (NotaryRatingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.debug("Error while checking Certificate "+ssli.getCertificates().getSHA1Fingerprint()+": "+e);
 		}
-
+		
 		return ValidationResult.UNKNOWN;
 	}
 
