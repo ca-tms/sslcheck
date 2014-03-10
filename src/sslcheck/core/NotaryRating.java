@@ -35,9 +35,11 @@ public class NotaryRating {
 			f = normalizeResult(notary, f); // Normalisierung, um eine
 											// Verrechnung mit anderen Notaries
 											// zu ermöglichen
-			this.ratings.add(f
-					* ((Float.parseFloat(this.notaryConf.getValue(
-							"ratingFactor", notary)))));
+			synchronized (this.ratings) {
+				this.ratings.add(f
+						* ((Float.parseFloat(this.notaryConf.getValue(
+								"ratingFactor", notary)))));
+			}
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to float");
 			throw new NotaryRatingException(
@@ -52,18 +54,24 @@ public class NotaryRating {
 	}
 
 	public void clear() {
-		this.ratings.clear();
+		synchronized (this.ratings) {
+			this.ratings.clear();
+		}
 	}
 
 	public float calculateScore() {
-		float r = 0;
-		for (float f : this.ratings)
-			r += f;
-		if(this.ratings.size()>0)
-			this._RATING_ = r / this.ratings.size(); // (r1 + r2 + r3 + ... + rn)/n
-		else
-			this._RATING_ = 0;
-		return this._RATING_;
+		synchronized (this.ratings) {
+			float r = 0;
+			for (float f : this.ratings)
+				r += f;
+			if (this.ratings.size() > 0)
+				this._RATING_ = r / this.ratings.size(); // (r1 + r2 + r3 + ...
+															// +
+															// rn)/n
+			else
+				this._RATING_ = 0;
+			return this._RATING_;
+		}
 	}
 
 	public float normalizeResult(String notary, float f)
@@ -97,9 +105,11 @@ public class NotaryRating {
 			int max = Integer.parseInt(this.notaryConf.getValue("maxRating"));
 			float trustLimit = Float.parseFloat(this.notaryConf
 					.getValue("trustLimit"));
-			if (this._RATING_ < 0)
-				return this.calculateScore() > max * trustLimit;
-			return this._RATING_ > max * trustLimit;
+			synchronized (this.ratings) {
+				if (this._RATING_ < 0)
+					return this.calculateScore() > max * trustLimit;
+				return this._RATING_ > max * trustLimit;
+			}
 
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to int or float in isPossiblyTrusted");
