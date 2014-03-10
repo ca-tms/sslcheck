@@ -1,7 +1,5 @@
 package sslcheck.core;
 
-import java.net.URL;
-
 import sslcheck.notaries.Notary;
 
 /**
