@@ -13,14 +13,14 @@ import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 
-import sslcheck.core.X509Certificate;
+import sslcheck.core.TLSCertificate;
 
 public class ICSINotary extends Notary {
 
 	private final static Logger log = LogManager.getLogger("notaries.ICSI");
 
 	@Override
-	public float check(String h, X509Certificate c) {
+	public float check(String h, TLSCertificate c) {
 		float score = 0f;
 		// First Phase, just print the certificate to check
 		log.trace("-- BEGIN -- ICSINotary.check() ");
@@ -39,6 +39,7 @@ public class ICSINotary extends Notary {
 	}
 
 	/**
+	 * Method as described in documentation
 	 * 
 	 * @param hash
 	 * @return

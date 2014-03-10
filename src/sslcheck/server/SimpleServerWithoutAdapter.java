@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
-import sslcheck.core.SSLInfo;
+import sslcheck.core.TLSInfo;
 
 /**
  * This is a simple Server accessing all objects in a direct way without
@@ -75,7 +75,7 @@ public class SimpleServerWithoutAdapter {
 
 			// Extract Certificates
 			servercerts = session.getPeerCertificates();
-			SSLInfo sslinfo = new SSLInfo("www.google.de",
+			TLSInfo sslinfo = new TLSInfo("www.google.de",
 					(X509Certificate[]) servercerts);
 
 			// Initialize Notaries by using NotaryManager

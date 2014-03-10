@@ -3,7 +3,7 @@ package sslcheck.notaries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sslcheck.core.X509Certificate;
+import sslcheck.core.TLSCertificate;
 
 public class ConvergenceNotary extends Notary {
 
@@ -11,7 +11,7 @@ public class ConvergenceNotary extends Notary {
 			.getLogger("notaries.Convergence");
 
 	@Override
-	public float check(String h, X509Certificate c) {
+	public float check(String h, TLSCertificate c) {
 		// First Phase, just print the certificate to check
 		log.trace("-- BEGIN -- ConvergenceNotary.check() ");
 		String convergenceCompatibleHash = this.convertHash(c
@@ -19,10 +19,16 @@ public class ConvergenceNotary extends Notary {
 		log.info("Checking Certificate for " + h
 				+ " using convergenceCompatibleHash "
 				+ convergenceCompatibleHash);
+		float result = this.checkNotary(h, c);
 		log.trace("-- DONE -- ConvergenceNotary.check() ");
 		// Note to myself: What todo if getPresumedHost() == null -> Certificate
 		// is CA Certificate...
-		return 100;
+		return result;
+	}
+
+	private float checkNotary(String url, TLSCertificate c) {
+		
+		return 0f;
 	}
 
 	/**

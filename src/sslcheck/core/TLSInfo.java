@@ -12,18 +12,18 @@ import sslcheck.notaries.Notary;
  * @author letzkus
  * 
  */
-public class SSLInfo {
+public class TLSInfo {
 
 	String url;
-	X509Certificate certificates;
+	TLSCertificate certificates;
 
-	public X509Certificate getCertificates() {
+	public TLSCertificate getCertificates() {
 		return certificates;
 	}
 
-	public SSLInfo(String url, java.security.cert.X509Certificate[] servercerts) {
+	public TLSInfo(String url, java.security.cert.Certificate[] servercerts) throws TLSCertificateException {
 		this.url = url;
-		this.certificates = X509Certificate
+		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
 	}
 
@@ -39,12 +39,12 @@ public class SSLInfo {
 		String str = "";
 		str += "URL: " + this.url + "\n";
 		str += "Certificates: " + this.certificates.getAvailPathLen() + "\n";
-		X509Certificate cer = this.certificates;
+		TLSCertificate cer = this.certificates;
 		while (cer.hasIssuerCert()) {
 			str += "----------------------------------------------------\n";
 			try {
-				str += "Subject: " + cer.getSubject() + "\n";
-				str += "Issuer: " + cer.getIssuer() + "\n";
+				str += "Subject: " + cer.getSubjectDN() + "\n";
+				str += "Issuer: " + cer.getIssuerDN() + "\n";
 				str += "SHA-1 Hash: " + cer.getSHA1Fingerprint() + "\n";
 			} catch (Exception e) {
 				str += "SHA-1 Hash not available: " + e + "\n";

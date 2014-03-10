@@ -28,11 +28,18 @@ public class NotaryServer implements Notary {
 	private final static Logger log = LogManager.getRootLogger();
 
 	public ValidationResult queryNotary(Certificate cert) {
+		
+		/**
+		 * This is a hard requirement!
+		 */
+		if(!(cert instanceof java.security.cert.X509Certificate)) {
+			return  ValidationResult.UNKNOWN;
+		}
 
 		X509Certificate[] certs = { (X509Certificate) cert };
 
 		// TODO Implement real url..
-		SSLInfo ssli = new SSLInfo("cacert.org", certs);
+		SSLInfo ssli = new SSLInfo((), certs);
 		
 		// Initialize Notaries by using NotaryManager
 		NotaryManager nm = new NotaryManager();
