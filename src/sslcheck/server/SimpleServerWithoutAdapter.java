@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
+import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSInfo;
 
 /**
@@ -75,7 +76,8 @@ public class SimpleServerWithoutAdapter {
 
 			// Extract Certificates
 			servercerts = session.getPeerCertificates();
-			TLSInfo sslinfo = new TLSInfo("www.google.de",
+			TLSInfo sslinfo;
+			sslinfo = new TLSInfo("www.google.de",
 					(X509Certificate[]) servercerts);
 
 			// Initialize Notaries by using NotaryManager
@@ -95,7 +97,10 @@ public class SimpleServerWithoutAdapter {
 			e1.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (TLSCertificateException e) {
+			log.error("Can'parse certificate!!! Error: " + e);
 		}
+
 		log.trace("Done.");
 	}
 }
