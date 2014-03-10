@@ -13,7 +13,7 @@ import sslcheck.notaries.Notary;
 public class TLSConnectionInfo {
 
 	String remoteHost;
-	int port;
+	int remotePort;
 	TLSCertificate certificates;
 
 	public TLSCertificate getCertificates() {
@@ -22,6 +22,7 @@ public class TLSConnectionInfo {
 
 	public TLSConnectionInfo(String remoteHost, int port, java.security.cert.Certificate[] servercerts) throws TLSCertificateException {
 		this.remoteHost = remoteHost;
+		this.remotePort = port;
 		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
 	}
@@ -59,8 +60,7 @@ public class TLSConnectionInfo {
 	}
 
 	public int getRemotePort() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.remotePort;
 	}
 
 	/**
