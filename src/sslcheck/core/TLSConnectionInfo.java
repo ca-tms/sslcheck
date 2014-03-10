@@ -21,13 +21,22 @@ public class TLSConnectionInfo {
 		return certificates;
 	}
 
-	public TLSConnectionInfo(String remoteHost, int port, java.security.cert.Certificate[] servercerts) throws TLSCertificateException {
+	public TLSConnectionInfo(String remoteHost, int port,
+			java.security.cert.Certificate[] servercerts)
+			throws TLSCertificateException {
 		this.remoteHost = remoteHost;
 		this.remotePort = port;
 		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
 	}
 
+	/**
+	 * Validates itself using given Notary n
+	 * 
+	 * @param n
+	 *            the Notary
+	 * @return Result of validation. Can be -1 in case of an internal error.
+	 */
 	public float validateCertificates(Notary n) {
 		try {
 			return n.check(this);
