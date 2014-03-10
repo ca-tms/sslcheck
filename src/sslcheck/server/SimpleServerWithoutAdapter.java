@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
 import sslcheck.core.TLSCertificateException;
-import sslcheck.core.TLSInfo;
+import sslcheck.core.TLSConnectionInfo;
 //import sslcheck.notaries.ICSINotary; // see lines 82-90
 //import sslcheck.notaries.ConvergenceNotary; // see lines 82-90
 
@@ -43,6 +43,9 @@ public class SimpleServerWithoutAdapter {
 		log.trace("Initializing...");
 		// NotaryConfiguration notaryConf = NotaryConfiguration.getInstance();
 		// NotaryRating notaryRating = NotaryRating.getInstance();
+		
+		String host = "cacert.org";
+		int port = 443;
 
 		try {
 			log.trace("Connecting to Host...");
@@ -71,14 +74,14 @@ public class SimpleServerWithoutAdapter {
 			final SSLSocketFactory factory = sslContext.getSocketFactory();
 			SSLSocket socket;
 			Certificate[] servercerts = {};
-			socket = (SSLSocket) factory.createSocket("wikipedia.org", 443);
+			socket = (SSLSocket) factory.createSocket(host, port);
 			socket.startHandshake();
 			SSLSession session = socket.getSession();
 
 			// Extract Certificates
 			servercerts = session.getPeerCertificates();
-			TLSInfo sslinfo;
-			sslinfo = new TLSInfo("www.google.de",
+			TLSConnectionInfo sslinfo;
+			sslinfo = new TLSConnectionInfo(host, port,
 					(X509Certificate[]) servercerts);
 
 			// Initialize Notaries by using NotaryManager

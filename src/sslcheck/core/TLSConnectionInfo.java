@@ -10,23 +10,24 @@ import sslcheck.notaries.Notary;
  * @author letzkus
  * 
  */
-public class TLSInfo {
+public class TLSConnectionInfo {
 
-	String url;
+	String remoteHost;
+	int port;
 	TLSCertificate certificates;
 
 	public TLSCertificate getCertificates() {
 		return certificates;
 	}
 
-	public TLSInfo(String url, java.security.cert.Certificate[] servercerts) throws TLSCertificateException {
-		this.url = url;
+	public TLSConnectionInfo(String remoteHost, int port, java.security.cert.Certificate[] servercerts) throws TLSCertificateException {
+		this.remoteHost = remoteHost;
 		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
 	}
 
 	public float validateCertificates(Notary n) {
-		return n.check(this.url, this.certificates);
+		return n.check(this);
 	}
 
 	/**
@@ -35,7 +36,7 @@ public class TLSInfo {
 	@Override
 	public String toString() {
 		String str = "";
-		str += "URL: " + this.url + "\n";
+		str += "URL: " + this.remoteHost + "\n";
 		str += "Certificates: " + this.certificates.getAvailPathLen() + "\n";
 		TLSCertificate cer = this.certificates;
 		while (cer.hasIssuerCert()) {
@@ -51,6 +52,15 @@ public class TLSInfo {
 		}
 		str += "----------------------------------------------------\n";
 		return str;
+	}
+
+	public String getRemoteHost() {
+		return this.remoteHost;
+	}
+
+	public int getRemotePort() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	/**

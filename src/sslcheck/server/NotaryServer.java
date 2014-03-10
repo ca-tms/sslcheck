@@ -10,7 +10,7 @@ import sslcheck.core.NotaryManager;
 import sslcheck.core.NotaryRating;
 import sslcheck.core.NotaryRatingException;
 import sslcheck.core.TLSCertificateException;
-import sslcheck.core.TLSInfo;
+import sslcheck.core.TLSConnectionInfo;
 
 /**
  * NotaryServer implementes the sslcheck.server.Notary interface to be fully
@@ -39,11 +39,11 @@ public class NotaryServer implements Notary {
 
 		X509Certificate[] certs = { (X509Certificate) cert };
 
-		// TODO Implement real url..
-		TLSInfo ssli;
+		// TODO Implement real host and port...
+		TLSConnectionInfo ssli;
 		try {
-			ssli = new TLSInfo(((X509Certificate) cert).getSubjectDN()
-					.toString(), certs);
+			ssli = new TLSConnectionInfo(((X509Certificate) cert).getSubjectDN()
+					.toString(), 443, certs);
 
 			// Initialize Notaries by using NotaryManager
 			NotaryManager nm = new NotaryManager();
@@ -51,25 +51,22 @@ public class NotaryServer implements Notary {
 
 			ssli.validateCertificates(nm);
 
-			try {
-				if (nr.isPossiblyTrusted()) {
-					log.info("Certificate "
-							+ ssli.getCertificates().getSHA1Fingerprint()
-							+ " is valid.");
-					return ValidationResult.TRUSTED;
-				} else {
-					log.info("Certificate "
-							+ ssli.getCertificates().getSHA1Fingerprint()
-							+ " is invalid.");
-					return ValidationResult.UNTRUSTED;
-				}
-			} catch (NotaryRatingException e) {
-				log.debug("Error while checking Certificate "
-						+ ssli.getCertificates().getSHA1Fingerprint() + ": "
-						+ e);
+			if (nr.isPossiblyTrusted()) {
+				log.info("Certificate "
+						+ ssli.getCertificates().getSHA1Fingerprint()
+						+ " is valid.");
+				return ValidationResult.TRUSTED;
+			} else {
+				log.info("Certificate "
+						+ ssli.getCertificates().getSHA1Fingerprint()
+						+ " is invalid.");
+				return ValidationResult.UNTRUSTED;
 			}
+
 		} catch (TLSCertificateException e1) {
 			log.error("Can'parse certificate!!! Error: " + e1);
+		} catch (NotaryRatingException e) {
+			log.debug("Error while checking Certificates:" + e);
 		}
 		return ValidationResult.UNKNOWN;
 

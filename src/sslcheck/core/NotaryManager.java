@@ -119,16 +119,17 @@ public class NotaryManager extends Notary {
 	/**
 	 * Checks the certificate by calling check-Method on all enabled Notaries
 	 * 
-	 * @param c
-	 *            the X509Certificate to check
+	 * @param tls
+	 *            Information regarding the tls connection, e.g. certificates,
+	 *            host, port
 	 * @return Validity score
 	 */
 	@Override
-	public float check(String h, TLSCertificate c) {
+	public float check(TLSConnectionInfo tls) {
 		for (Notary n : this.enabledNotaries) {
 			try {
 				log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
-				notaryRating.addRating(n.getNotaryName(), n.check(h, c));
+				notaryRating.addRating(n.getNotaryName(), n.check(tls));
 				log.trace("-- END -- Checking notary " + n.getNotaryName());
 			} catch (NotaryRatingException e) {
 				log.error(e.getMessage());
