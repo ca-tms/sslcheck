@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.notaries.Notary;
+import sslcheck.notaries.NotaryException;
 
 /**
  * NotaryManager acts as a proxy class for normal notaries. It creates every
@@ -133,6 +134,8 @@ public class NotaryManager extends Notary {
 				log.trace("-- END -- Checking notary " + n.getNotaryName());
 			} catch (NotaryRatingException e) {
 				log.error(e.getMessage());
+			} catch (NotaryException e) {
+				log.error("Could not check notary "+n+" because of internal errors: "+e);
 			}
 		}
 		return notaryRating.calculateScore();

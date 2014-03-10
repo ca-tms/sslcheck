@@ -20,7 +20,7 @@ public class ICSINotary extends Notary {
 	private final static Logger log = LogManager.getLogger("notaries.ICSI");
 
 	@Override
-	public float check(TLSConnectionInfo tls) {
+	public float check(TLSConnectionInfo tls) throws NotaryException {
 		
 		TLSCertificate c = tls.getCertificates();
 		
@@ -207,8 +207,7 @@ public class ICSINotary extends Notary {
 			log.trace("-- DONE -- ICSINotary.check() ");
 			
 		} catch (TextParseException e) { //
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new NotaryException("TextParseException in Lookup(hostname): "+e);
 		}
 		return result;
 

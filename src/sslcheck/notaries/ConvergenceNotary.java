@@ -1,21 +1,16 @@
 package sslcheck.notaries;
 
-import java.io.IOException;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
 import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -32,7 +27,7 @@ public class ConvergenceNotary extends Notary {
 			.getLogger("notaries.Convergence");
 
 	@Override
-	public float check(TLSConnectionInfo tls) {
+	public float check(TLSConnectionInfo tls) throws NotaryException {
 		String h = tls.getRemoteHost();
 		TLSCertificate c = tls.getCertificates();
 		int port = tls.getRemotePort();
@@ -76,7 +71,7 @@ public class ConvergenceNotary extends Notary {
 			if (status == 303 || status == 400 || status == 503) {
 
 				log.error("Internal error: " + json);
-				return 0;
+				throw new NotaryException("Internal error code "+Integer.toString(status)+" received: "+json);
 
 			} else if (status == 200 || status == 409) {
 

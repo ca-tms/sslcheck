@@ -1,6 +1,7 @@
 package sslcheck.core;
 
 import sslcheck.notaries.Notary;
+import sslcheck.notaries.NotaryException;
 
 /**
  * SSLInfo is a class used for storing HTTPS/SSL-related information such as URL
@@ -28,7 +29,11 @@ public class TLSConnectionInfo {
 	}
 
 	public float validateCertificates(Notary n) {
-		return n.check(this);
+		try {
+			return n.check(this);
+		} catch (NotaryException e) {
+			return -1;
+		}
 	}
 
 	/**
