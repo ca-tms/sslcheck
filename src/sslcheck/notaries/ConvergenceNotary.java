@@ -1,5 +1,13 @@
 package sslcheck.notaries;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -47,62 +55,111 @@ public class ConvergenceNotary extends Notary {
 
 		// TODO using https://notary.thoughtcrime.org:443/target/cacert.org for
 		// testing purposes
-		WebResource service = client
-				.resource("https://notary.thoughtcrime.org:443/target/");
+		String[] notaryURLs = { "https://notary.thoughtcrime.org:443/target/" };
+		float result = 0f;
+		
+		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 
-		// Creating POST-Request
-		// MultivaluedMap -> see
-		// https://stackoverflow.com/questions/2136119/using-the-jersey-client-to-do-a-post-operation
-		MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-		formData.add("fingerprint", convergenceCompatibleHash);
-		ClientResponse data = service.path(h + "+" + Integer.toString(port))
-				.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
-				.post(ClientResponse.class, formData);
+			public void checkClientTrusted(final X509Certificate[] chain,
+					final String authType) {
+			}
 
-		if (data.hasEntity()) {
+			public void checkServerTrusted(final X509Certificate[] chain,
+					final String authType) {
+			}
 
-			String json = data.getEntity(String.class);
-			int status = data.getStatus();
+			public X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		} };
+			
 
-			log.debug("Received answer: Status "
-					+ Integer.toString(data.getStatus()) + " | Body: "
-					+ json.substring(0, 30) + "...");
+		try {
+			
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(null, trustAllCerts,
+					new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
+					.getSocketFactory());
 
-			if (status == 303 || status == 400 || status == 503) {
+			for (String notaryURL : notaryURLs) {
+				WebResource service = client.resource(notaryURL);
 
-				log.error("Internal error: " + json);
-				throw new NotaryException("Internal error code "+Integer.toString(status)+" received: "+json);
+				// Creating POST-Request
+				// MultivaluedMap -> see
+				// https://stackoverflow.com/questions/2136119/using-the-jersey-client-to-do-a-post-operation
+				MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+				formData.add("fingerprint", convergenceCompatibleHash);
+				ClientResponse data = service
+						.path(h + "+" + Integer.toString(port))
+						.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+						.post(ClientResponse.class, formData);
 
-			} else if (status == 200 || status == 409) {
+				if (data.hasEntity()) {
 
-				try {
+					String json = data.getEntity(String.class);
+					int status = data.getStatus();
 
-					// Let's parse the answer and make it a POJO
-					// ObjectMapper Example -> see
-					// http://blogs.steeplesoft.com/posts/2012/01/26/a-jersey-pojomapping-clientserver-example/
+					log.debug("Received answer: Status "
+							+ Integer.toString(data.getStatus()) + " | Body: "
+							+ json + "...");
 
-					ObjectMapper mapper = new ObjectMapper();
-					Response resp = mapper.readValue(json,
-							new TypeReference<Response>() {
-							});
-					log.debug("JSON parsed successfully!");
+					if (status == 303 || status == 400 || status == 503) {
 
-					switch (status) {
-					case 200:
-						return 10;
-					case 409:
-						return 0;
-					default:
-						return 0;
+						log.error(String.format("%1: Internal error: %2",
+								notaryURL, json));
+						continue;
+
+					} else if (status == 200 || status == 409) {
+
+						// Let's parse the answer and make it a POJO
+						// ObjectMapper Example -> see
+						// http://blogs.steeplesoft.com/posts/2012/01/26/a-jersey-pojomapping-clientserver-example/
+
+						ObjectMapper mapper = new ObjectMapper();
+						Response resp = mapper.readValue(json,
+								new TypeReference<Response>() {
+								});
+						log.debug("JSON parsed successfully!");
+
+						switch (status) {
+						case 200:
+							log.info(String.format("%s: Received 200.",
+									notaryURL));
+							result += 10;
+							break;
+						case 409:
+							log.info(String.format("%s: Received 409.",
+									notaryURL));
+							result += 0;
+							break;
+						default:
+							log.info(String.format("%s: Received %s.",
+									notaryURL, Integer.toString(status)));
+							return 0;
+						}
+
 					}
-				} catch (JsonParseException e) {
-					log.error("Error parsing json... " + e);
-				} catch (Exception e) {
-					log.error("General exception: " + e);
+
 				}
+
+				if (notaryURLs.length > 0)
+					result = result / notaryURLs.length;
+
+				return result;
 
 			}
 
+		} catch (JsonParseException e) {
+			log.error("Error parsing json... " + e);
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (KeyManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("General exception: " + e);
 		}
 
 		log.trace("-- DONE -- ConvergenceNotary.check() ");
