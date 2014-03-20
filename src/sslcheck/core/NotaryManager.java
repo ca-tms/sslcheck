@@ -130,7 +130,7 @@ public class NotaryManager extends Notary {
 		for (Notary n : this.enabledNotaries) {
 			try {
 				log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
-				notaryRating.addRating(n.getNotaryName(), n.check(tls));
+				notaryRating.addRating(tls.hashCode(), n.getNotaryName(), n.check(tls));
 				log.trace("-- END -- Checking notary " + n.getNotaryName());
 			} catch (NotaryRatingException e) {
 				log.error(e.getMessage());
@@ -138,6 +138,6 @@ public class NotaryManager extends Notary {
 				log.error("Could not check notary "+n+" because of internal errors: "+e);
 			}
 		}
-		return notaryRating.calculateScore();
+		return notaryRating.getScore(tls.hashCode());
 	}
 }

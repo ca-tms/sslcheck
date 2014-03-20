@@ -1,5 +1,6 @@
 package sslcheck.server;
 
+import java.net.MalformedURLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -7,8 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
-import sslcheck.core.NotaryRating;
-import sslcheck.core.NotaryRatingException;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSConnectionInfo;
 
@@ -39,19 +38,21 @@ public class NotaryServer implements Notary {
 
 		X509Certificate[] certs = { (X509Certificate) cert };
 
-		// TODO Implement real host and port...
 		TLSConnectionInfo ssli;
 		try {
-			ssli = new TLSConnectionInfo(((X509Certificate) cert).getSubjectDN()
-					.toString(), 443, certs);
+			ssli = new TLSConnectionInfo(((X509Certificate) cert)
+					.getSubjectDN().toString(), 443, certs);
+			
+			// Possible initializations
+			// ssli = new TLSConnectionInfo(String host, int port, X509Certificate[] certs)
+			// ssli = new TLSConnectionInfo(String url, X509Certificate[] certs)
 
 			// Initialize Notaries by using NotaryManager
 			NotaryManager nm = new NotaryManager();
-			NotaryRating nr = NotaryRating.getInstance();
 
 			ssli.validateCertificates(nm);
 
-			if (nr.isPossiblyTrusted()) {
+			if (ssli.isTrusted()) {
 				log.info("Certificate "
 						+ ssli.getCertificates().getSHA1Fingerprint()
 						+ " is valid.");
@@ -65,8 +66,8 @@ public class NotaryServer implements Notary {
 
 		} catch (TLSCertificateException e1) {
 			log.error("Can'parse certificate!!! Error: " + e1);
-		} catch (NotaryRatingException e) {
-			log.debug("Error while checking Certificates:" + e);
+		} catch (MalformedURLException e) {
+			log.debug("Url is malformed:" + e);
 		}
 		return ValidationResult.UNKNOWN;
 

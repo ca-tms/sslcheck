@@ -1,5 +1,8 @@
 package sslcheck.core;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import sslcheck.notaries.Notary;
 import sslcheck.notaries.NotaryException;
 
@@ -23,9 +26,20 @@ public class TLSConnectionInfo {
 
 	public TLSConnectionInfo(String remoteHost, int port,
 			java.security.cert.Certificate[] servercerts)
-			throws TLSCertificateException {
-		this.remoteHost = remoteHost;
+			throws TLSCertificateException, MalformedURLException {
+		this.remoteHost = new URL(remoteHost).getHost();
 		this.remotePort = port;
+		this.certificates = TLSCertificate
+				.constructX509CertificatePath(servercerts);
+	}
+
+	public TLSConnectionInfo(String host,
+			java.security.cert.Certificate[] servercerts)
+			throws TLSCertificateException, MalformedURLException {
+		URL url = new URL(host);
+		this.remoteHost = url.getHost();
+		this.remotePort = (url.getPort() == -1) ? url.getPort() : url
+				.getDefaultPort();
 		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
 	}
@@ -43,6 +57,15 @@ public class TLSConnectionInfo {
 		} catch (NotaryException e) {
 			return -1;
 		}
+	}
+	
+	/**
+	 * Detemines, whether the connection is trustworthy or not.
+	 * @return true/false trusted/non trusted
+	 */
+	public boolean isTrusted() {
+		NotaryRating nr = NotaryRating.getInstance();
+		return nr.isPossiblyTrusted(hashCode());
 	}
 
 	/**
@@ -77,8 +100,19 @@ public class TLSConnectionInfo {
 		return this.remotePort;
 	}
 
-	/**
-	 * Returns
-	 */
-
+	@Override
+	public int hashCode() {
+		
+		// Build string
+		String hash = this.getRemoteHost()+";"+this.getRemotePort()+";";
+		TLSCertificate issuer = this.certificates;
+		do {
+			hash.concat(issuer.getSHA1Fingerprint()+";");
+			issuer = issuer.getIssuerCert();
+		} while(issuer!=null);
+		
+		// uses hashCode of String
+		return hash.hashCode();
+			
+	}
 }
