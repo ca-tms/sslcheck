@@ -148,6 +148,9 @@ public class ICSINotary extends Notary {
 									result_first = 10 * (first_seen - min_seen)
 											/ (optimal_seen - min_seen);
 								}
+								
+								if(result_first<0)
+									log.debug("This is possibly a CA certificate!");
 
 								log.debug("first_seen: (min,max,optimal,first,result) = ("
 										+ min_seen
