@@ -28,31 +28,39 @@ public class NotaryRating {
 			throws NotaryRatingException {
 		try {
 
-			log.debug("Adding Rating for Connection " + Integer.toString(i) + " and Notary " + notary + ": "
-					+ Float.toString(f) + " [max: "
-					+ this.notaryConf.getValue("maxRating", notary)
-					+ " | min: "
-					+ this.notaryConf.getValue("minRating", notary) + "]");
+			float minRating = Float.parseFloat(this.notaryConf.getValue(
+					"minRating", notary));
+			float maxRating = Float.parseFloat(this.notaryConf.getValue(
+					"maxRating", notary));
+			float ratingFactor = Float.parseFloat(this.notaryConf.getValue(
+					"ratingFactor", notary));
+
+			// Es gibt immer einen kleinsten Wert.
+			if (f < minRating)
+				f = minRating;
+			// Es gibt immer einen groeßten Wert.
+			if (f > maxRating)
+				f = maxRating;
+
+			log.debug("Adding Rating for Connection (" + Integer.toString(i)
+					+ ") and Notary " + notary + ": " + Float.toString(f)
+					+ " [max: " + Float.toString(maxRating) + " | min: "
+					+ Float.toString(minRating) + "]");
+
 			f = normalizeResult(notary, f); // Normalisierung, um eine
 											// Verrechnung mit anderen Notaries
 											// zu ermöglichen
 			log.debug("Normalized result: " + Float.toString(f));
+
 			synchronized (this.ratings) {
 				if (this.ratings.containsKey(i)) {
 					float r = this.ratings.get(i);
-					r += f
-							* ((Float.parseFloat(this.notaryConf.getValue(
-									"ratingFactor", notary))));
+					r += f * ratingFactor;
 					r /= 2;
-					//this.ratings.remove(host);
 					this.ratings.put(i, r);
 				} else {
-					this.ratings
-							.put(i,
-									f
-											* ((Float.parseFloat(this.notaryConf
-													.getValue("ratingFactor",
-															notary)))));
+					float r = f * ratingFactor;
+					this.ratings.put(i, r);
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -78,10 +86,10 @@ public class NotaryRating {
 	public float calculateScore(int h) {
 		return this.getScore(h);
 	}
-	
+
 	public float getScore(int i) {
 		float r = this.ratings.get(i);
-		//this.ratings.remove(i);
+		// this.ratings.remove(i);
 		return r;
 	}
 
