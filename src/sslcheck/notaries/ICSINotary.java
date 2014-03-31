@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.Lookup;
-import org.xbill.DNS.Rcode;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.TextParseException;
@@ -21,13 +20,13 @@ public class ICSINotary extends Notary {
 
 	@Override
 	public float check(TLSConnectionInfo tls) throws NotaryException {
-		
+
 		TLSCertificate c = tls.getCertificates();
-		
+
 		log.trace("-- BEGIN -- ICSINotary.check() ");
 		float result = 0f;
-		
-		try {	
+
+		try {
 			String hash = c.getSHA1Fingerprint();
 			log.trace("--- BEGIN --- Checking A-RR...");
 			Lookup l;
@@ -35,7 +34,11 @@ public class ICSINotary extends Notary {
 			l = new Lookup(hash + ".notary.icsi.berkeley.edu", Type.A);
 
 			Record[] records = l.run();
-			if (l.getResult() != Rcode.NXDOMAIN && records.length > 0) {
+			if (records != null
+					&& (l.getResult() != Lookup.HOST_NOT_FOUND
+							|| l.getResult() != Lookup.TYPE_NOT_FOUND || l
+							.getResult() != Lookup.UNRECOVERABLE)
+					&& records.length > 0) {
 				// --- 1 --- Checking A-RR
 				for (int i = 0; i < records.length; i++) { // records.length ==
 															// 1 ->
@@ -148,8 +151,8 @@ public class ICSINotary extends Notary {
 									result_first = 10 * (first_seen - min_seen)
 											/ (optimal_seen - min_seen);
 								}
-								
-								if(result_first<0)
+
+								if (result_first < 0)
 									log.debug("This is possibly a CA certificate!");
 
 								log.debug("first_seen: (min,max,optimal,first,result) = ("
@@ -208,9 +211,10 @@ public class ICSINotary extends Notary {
 				log.trace("--- DONE --- Checking A-RR");
 			}
 			log.trace("-- DONE -- ICSINotary.check() ");
-			
+
 		} catch (TextParseException e) { //
-			throw new NotaryException("TextParseException in Lookup(hostname): "+e);
+			throw new NotaryException(
+					"TextParseException in Lookup(hostname): " + e);
 		}
 		return result;
 
