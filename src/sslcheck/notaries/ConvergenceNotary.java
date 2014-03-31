@@ -1,5 +1,6 @@
 package sslcheck.notaries;
 
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -53,11 +55,11 @@ public class ConvergenceNotary extends Notary {
 				JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 		Client client = Client.create(jerseyClientConfig);
 
-		// TODO using https://notary.thoughtcrime.org:443/target/cacert.org for
-		// testing purposes
-		String[] notaryURLs = { "https://notary.thoughtcrime.org:443/target/" };
+		String[] notaryURLs = { "https://notary.thoughtcrime.org:443/target/",
+				"https://notary.void.gr:443/target/",
+				"https://notary-eu.convergence.qualys.com:443/target/" };
 		float result = 0f;
-		
+
 		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 
 			public void checkClientTrusted(final X509Certificate[] chain,
@@ -72,45 +74,48 @@ public class ConvergenceNotary extends Notary {
 				return null;
 			}
 		} };
-			
 
 		try {
-			
+
 			SSLContext sslContext = SSLContext.getInstance("TLS");
+
 			sslContext.init(null, trustAllCerts,
 					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
 					.getSocketFactory());
 
 			for (String notaryURL : notaryURLs) {
-				WebResource service = client.resource(notaryURL);
 
-				// Creating POST-Request
-				// MultivaluedMap -> see
-				// https://stackoverflow.com/questions/2136119/using-the-jersey-client-to-do-a-post-operation
-				MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-				formData.add("fingerprint", convergenceCompatibleHash);
-				ClientResponse data = service
-						.path(h + "+" + Integer.toString(port))
-						.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
-						.post(ClientResponse.class, formData);
+				try {
 
-				if (data.hasEntity()) {
+					WebResource service = client.resource(notaryURL);
 
-					String json = data.getEntity(String.class);
-					int status = data.getStatus();
+					// Creating POST-Request
+					// MultivaluedMap -> see
+					// https://stackoverflow.com/questions/2136119/using-the-jersey-client-to-do-a-post-operation
+					MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+					formData.add("fingerprint", convergenceCompatibleHash);
+					ClientResponse data = service
+							.path(h + "+" + Integer.toString(port))
+							.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+							.post(ClientResponse.class, formData);
 
-					log.debug("Received answer: Status "
-							+ Integer.toString(data.getStatus()) + " | Body: "
-							+ json + "...");
+					if (data.hasEntity()) {
 
-					if (status == 303 || status == 400 || status == 503) {
+						String json = data.getEntity(String.class);
+						int status = data.getStatus();
 
-						log.error(String.format("%1: Internal error: %2",
-								notaryURL, json));
-						continue;
+						log.debug("Received answer: Status "
+								+ Integer.toString(data.getStatus())
+								+ " | Body: " + json + "...");
 
-					} else if (status == 200 || status == 409) {
+						if (status == 303 || status == 400 || status == 503) {
+
+							log.error(String.format("%1: Internal error: %2",
+									notaryURL, json));
+							continue;
+
+						}
 
 						// Let's parse the answer and make it a POJO
 						// ObjectMapper Example -> see
@@ -136,32 +141,33 @@ public class ConvergenceNotary extends Notary {
 						default:
 							log.info(String.format("%s: Received %s.",
 									notaryURL, Integer.toString(status)));
-							return 0;
+							result += 0;
+							break;
 						}
 
 					}
 
+				} catch (JsonParseException | JsonMappingException e) { // Needs
+																		// Java 7
+					log.error("Error parsing json... " + e);
+				} catch (IOException e) {
+					log.error("I/O Error... " + e);
+				} catch (Exception e) {
+					log.error("General Exception... " + e);
 				}
-
-				if (notaryURLs.length > 0)
-					result = result / notaryURLs.length;
-
-				return result;
 
 			}
 
-		} catch (JsonParseException e) {
-			log.error("Error parsing json... " + e);
-		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			log.error("General exception: " + e);
-		}
+			if (notaryURLs.length > 0)
+				result = result / notaryURLs.length;
 
+			return result;
+
+		} catch (NoSuchAlgorithmException e1) {
+			log.error("NoAlgorithmException: " + e1);
+		} catch (KeyManagementException e1) {
+			log.error("KeyManagementException: " + e1);
+		}
 		log.trace("-- DONE -- ConvergenceNotary.check() ");
 		return 0f;
 	}
