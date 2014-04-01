@@ -174,11 +174,11 @@ public class ICSINotary extends Notary {
 								// -
 								// 15339
 								// Lowest Value: 0
-								float max_seen = 0, times_seen = 0;
+								float max_seen = 0, times_seen = 0, min_seen=1;
 								if (first_seen > 0 && last_seen > 0) {
 									max_seen = last_seen - first_seen;
 									times_seen = Float.parseFloat(p[1]);
-									result_times = 10 * times_seen / max_seen;
+									result_times = 10 * (times_seen-min_seen) / (max_seen-min_seen);
 								}
 
 								log.debug("times_seen: (max,times,result) = ("
@@ -201,8 +201,7 @@ public class ICSINotary extends Notary {
 							}
 						}
 					}
-					if (result_last > 0 && result_first > 0)
-						result += result_last + result_first + result_times;
+					result += result_last + result_first + result_times;
 				}
 				log.debug("Calculated score: " + result);
 				log.trace("--- DONE --- Checking TXT-RR.");
