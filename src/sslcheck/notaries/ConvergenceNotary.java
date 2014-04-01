@@ -1,6 +1,5 @@
 package sslcheck.notaries;
 
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -14,10 +13,6 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -29,7 +24,6 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import sslcheck.core.TLSCertificate;
 import sslcheck.core.TLSConnectionInfo;
-import sslcheck.notaries.Convergence.Response;
 
 public class ConvergenceNotary extends Notary {
 
@@ -56,8 +50,15 @@ public class ConvergenceNotary extends Notary {
 		Client client = Client.create(jerseyClientConfig);
 
 		String[] notaryURLs = { "https://notary.thoughtcrime.org:443/target/",
-				"https://notary.void.gr:443/target/",
-				"https://notary-eu.convergence.qualys.com:443/target/" };
+				"https://notary.void.gr:443/target/"
+		// ,"https://notary-eu.convergence.qualys.com:443/target/"
+		};
+
+		// see
+		// https://github.com/moxie0/Convergence/blob/master/client/chrome/content/ssl/ActiveNotaries.js
+		int checkedNotaryCount = 0;
+		int successCount = 0;
+
 		float result = 0f;
 
 		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -109,59 +110,67 @@ public class ConvergenceNotary extends Notary {
 								+ Integer.toString(data.getStatus())
 								+ " | Body: " + json + "...");
 
-						if (status == 303 || status == 400 || status == 503) {
+						// See documentation for details
+						if (status == 400 || status == 503) {
 
 							log.error(String.format("%1: Internal error: %2",
 									notaryURL, json));
 							continue;
 
+						} else if (status == 200) {
+
+							successCount++;
+
+						} else if (status == 303) {
+
+							checkedNotaryCount--;
+
+						} else if (status == 409) {
+
+							log.info(String.format(
+									"%1: POSSIBLE SECURITY PROBLEM!!!",
+									notaryURL));
+
+						} else {
+
+							log.info(String.format(
+									"%1: Received unknown status code!",
+									notaryURL));
+
 						}
 
-						// Let's parse the answer and make it a POJO
-						// ObjectMapper Example -> see
-						// http://blogs.steeplesoft.com/posts/2012/01/26/a-jersey-pojomapping-clientserver-example/
-
-						ObjectMapper mapper = new ObjectMapper();
-						Response resp = mapper.readValue(json,
-								new TypeReference<Response>() {
-								});
-						log.debug("JSON parsed successfully!");
-
-						switch (status) {
-						case 200:
-							log.info(String.format("%s: Received 200.",
-									notaryURL));
-							result += 10;
-							break;
-						case 409:
-							log.info(String.format("%s: Received 409.",
-									notaryURL));
-							result += 0;
-							break;
-						default:
-							log.info(String.format("%s: Received %s.",
-									notaryURL, Integer.toString(status)));
-							result += 0;
-							break;
-						}
+						checkedNotaryCount++;
 
 					}
 
-				} catch (JsonParseException | JsonMappingException e) { // Needs
-																		// Java 7
-					log.error("Error parsing json... " + e);
-				} catch (IOException e) {
-					log.error("I/O Error... " + e);
 				} catch (Exception e) {
 					log.error("General Exception... " + e);
 				}
 
 			}
 
-			if (notaryURLs.length > 0)
-				result = result / notaryURLs.length;
+			String _tmp = this.getConfigParam("decisionMethod");
+			String decisionMethod = (_tmp != null) ? _tmp : "minority";
 
-			return result;
+			// See documentation for details
+			if (decisionMethod.equals("minority") && successCount > 0) { // Minority
+
+				result = 10;
+
+			} else if (successCount <= 0 || decisionMethod.equals("consensus") // Consensus
+					&& (successCount > checkedNotaryCount)) {
+
+				result = 0;
+
+			} else { // Majority
+
+				int maj = (int) Math.floor(checkedNotaryCount / 2);
+				if ((checkedNotaryCount / 2) % 2 != 0)
+					maj++;
+				if (successCount >= maj)
+					result = 10;
+
+			}
 
 		} catch (NoSuchAlgorithmException e1) {
 			log.error("NoAlgorithmException: " + e1);
@@ -169,7 +178,7 @@ public class ConvergenceNotary extends Notary {
 			log.error("KeyManagementException: " + e1);
 		}
 		log.trace("-- DONE -- ConvergenceNotary.check() ");
-		return 0f;
+		return result;
 	}
 
 	/**
