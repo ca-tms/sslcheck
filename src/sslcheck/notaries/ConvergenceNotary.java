@@ -49,10 +49,9 @@ public class ConvergenceNotary extends Notary {
 				JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 		Client client = Client.create(jerseyClientConfig);
 
-		String[] notaryURLs = { "https://notary.thoughtcrime.org:443/target/",
-				"https://notary.void.gr:443/target/"
-		// ,"https://notary-eu.convergence.qualys.com:443/target/"
-		};
+		String _configuredNotaries = this.getConfigParam("notaries");
+		String configuredNotaries = (_configuredNotaries != null) ? _configuredNotaries : "https://notary.thoughtcrime.org:443/target/";
+		String[] notaryURLs = configuredNotaries.split(",");
 
 		// see
 		// https://github.com/moxie0/Convergence/blob/master/client/chrome/content/ssl/ActiveNotaries.js
@@ -73,6 +72,7 @@ public class ConvergenceNotary extends Notary {
 
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
+				// TODO
 			}
 		} };
 
@@ -106,7 +106,7 @@ public class ConvergenceNotary extends Notary {
 						String json = data.getEntity(String.class);
 						int status = data.getStatus();
 
-						log.debug("Received answer: Status "
+						log.debug(notaryURL+": Status "
 								+ Integer.toString(data.getStatus())
 								+ " | Body: " + json + "...");
 
