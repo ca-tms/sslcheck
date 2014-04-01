@@ -26,6 +26,26 @@ public class ICSINotary extends Notary {
 		log.trace("-- BEGIN -- ICSINotary.check() ");
 		float result = 0f;
 
+		String _tmp;
+
+		_tmp = this.getConfigParam("lastSeenThreshold");
+		int lastSeenThreshold = (_tmp != null) ? Integer.parseInt(_tmp) : 1; //30
+
+		_tmp = this.getConfigParam("firstSeenMinThreshold");
+		int firstSeenMinThreshold = (_tmp != null) ? Integer.parseInt(_tmp)
+				: 1; // 720
+
+		_tmp = this.getConfigParam("firstSeenOptimalThreshold");
+		int firstSeenOptimalThreshold = (_tmp != null) ? Integer.parseInt(_tmp)
+				: 1; // 365
+		
+		log.debug("CONFIGURAION:");
+		log.debug("lastSeenThreshold: "+lastSeenThreshold);
+		log.debug("firstSeenMinThreshold: "+firstSeenMinThreshold);
+		log.debug("lastSeenOptimalThreshold: "+firstSeenOptimalThreshold);
+		
+		_tmp = null;
+
 		try {
 			String hash = c.getSHA1Fingerprint();
 			log.trace("--- BEGIN --- Checking A-RR...");
@@ -110,7 +130,7 @@ public class ICSINotary extends Notary {
 								java.util.Date date = new java.util.Date();
 								float max_seen = date.getTime() / 1000 / 60
 										/ 60 / 24;
-								float min_seen = max_seen - 30;
+								float min_seen = max_seen - lastSeenThreshold;
 								last_seen = Float.parseFloat(p[1]);
 
 								// [min_seen,max_seen] —> [0,10]
@@ -137,8 +157,8 @@ public class ICSINotary extends Notary {
 								float max_seen = date.getTime() / 1000 / 60
 										/ 60 / 24;
 
-								float min_seen = max_seen - 2 * 356;
-								float optimal_seen = max_seen - 356;
+								float min_seen = max_seen - firstSeenMinThreshold;
+								float optimal_seen = max_seen - firstSeenOptimalThreshold;
 								first_seen = Long.parseLong(p[1]);
 
 								if (first_seen == optimal_seen) {
@@ -174,11 +194,12 @@ public class ICSINotary extends Notary {
 								// -
 								// 15339
 								// Lowest Value: 0
-								float max_seen = 0, times_seen = 0, min_seen=1;
+								float max_seen = 0, times_seen = 0, min_seen = 1;
 								if (first_seen > 0 && last_seen > 0) {
 									max_seen = last_seen - first_seen;
 									times_seen = Float.parseFloat(p[1]);
-									result_times = 10 * (times_seen-min_seen) / (max_seen-min_seen);
+									result_times = 10 * (times_seen - min_seen)
+											/ (max_seen - min_seen);
 								}
 
 								log.debug("times_seen: (max,times,result) = ("
