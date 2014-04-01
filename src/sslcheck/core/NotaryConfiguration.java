@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +16,7 @@ public class NotaryConfiguration {
 	Properties param = null;
 	
 	private static NotaryConfiguration instance = null;
-	HashMap<String,ArrayList<String>> notaryConfs = new HashMap<String,ArrayList<String>>();
+	ArrayList<String> notaries = new ArrayList<String>();
 	
 	public static NotaryConfiguration getInstance() { // NotarConfiguration is a singleton!!
 		if(instance == null)
@@ -45,18 +44,9 @@ public class NotaryConfiguration {
 			int idx = p.indexOf(".");
 			if(idx!=-1) {
 				String p_name = p.substring(0,idx);
-				String p_confVariable = p.substring(idx+1, p.length()-1);
-			
-				if(!this.notaryConfs.containsKey(p_name)){
-					ArrayList<String> variables = new ArrayList<String>();
-					variables.add(p_confVariable);
-					notaryConfs.put(p_name,variables);	
-				}else{
-					ArrayList<String> variables = this.notaryConfs.get(p_name);
-					this.notaryConfs.remove(p_name);
-					variables.add(p_confVariable);
-					notaryConfs.put(p_name,variables);	
-				}	
+				//String p_confVariable = p.substring(idx+1, p.length()-1);
+				if(!this.notaries.contains(p_name))
+					this.notaries.add(p_name);	
 			}
 		}
 	}
@@ -80,11 +70,28 @@ public class NotaryConfiguration {
 	}
 	
 	public ArrayList<String> getNotariesFromConfiguration() {
-		return new ArrayList<String>(this.notaryConfs.keySet());
+		return this.notaries;
 	}
 	
 	public String getName(String notary) {
 		return this.param.getProperty(notary + ".name",this.param.getProperty("DefaultNotary.defaultName","defaultName"));
+	}
+	
+	public Properties getNotaryConfiguration(String notary){
+		Properties config = new Properties();
+		Enumeration<Object> params = this.param.keys();
+		while(params.hasMoreElements()) {
+			String p = ((String) params.nextElement()); // Please surround me with try-catch..
+			int idx = p.indexOf(".");
+			if(idx!=-1) {
+				String p_name = p.substring(0,idx);
+				String p_confVariable = p.substring(idx+1, p.length());
+				
+				if(notary.equals(p_name))
+					config.put(p_confVariable, this.param.get(p));	
+			}
+		}
+		return config;
 	}
 
 }

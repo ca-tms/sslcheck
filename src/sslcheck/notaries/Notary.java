@@ -1,5 +1,7 @@
 package sslcheck.notaries;
 
+import java.util.Properties;
+
 import sslcheck.core.TLSConnectionInfo;
 
 public abstract class Notary {
@@ -10,6 +12,7 @@ public abstract class Notary {
 	 * If the name is not set (e.g. ""), than the notary is not checked.
 	 */
 	String __notaryName__ = "";
+	Properties __config__;
 	
 	public String getNotaryName() {
 		return this.__notaryName__;
@@ -17,6 +20,16 @@ public abstract class Notary {
 	
 	public void setNotaryName(String s) {
 		this.__notaryName__ = s;
+	}
+	
+	public void setConfiguration(Properties p) {
+		this.__config__ = p;
+	}
+	
+	public String getConfigParam(String param) {
+		if(this.__config__ != null)
+			return this.__config__.getProperty(param);
+		return null;
 	}
 	
 	/**

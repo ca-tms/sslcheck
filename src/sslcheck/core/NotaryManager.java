@@ -30,7 +30,7 @@ public class NotaryManager extends Notary {
 
 	private final static Logger log = LogManager
 			.getLogger("core.NotaryManager");
-
+	
 	/**
 	 * The constructor initializes the notaries based on the
 	 * notaries.properties-File.
@@ -52,6 +52,7 @@ public class NotaryManager extends Notary {
 					Notary n = (Notary) Class.forName(
 							"sslcheck.notaries." + notary).newInstance();
 					n.setNotaryName(this.notaryConf.getName(notary));
+					n.setConfiguration(this.notaryConf.getNotaryConfiguration(this.notaryConf.getName(notary)));
 					this.addNotary(n);
 
 				}
