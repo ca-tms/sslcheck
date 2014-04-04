@@ -99,9 +99,13 @@ public class NotaryManager extends Notary {
 				@Override
 				public X509Certificate[] getAcceptedIssuers() {
 					ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
-					for (X509TrustManager tm : trustManagers)
-						for (X509Certificate c : tm.getAcceptedIssuers())
-							certs.add(c);
+					X509Certificate[] accIss;
+					for (X509TrustManager tm : trustManagers){
+						accIss = tm.getAcceptedIssuers();
+						if(accIss != null && accIss.length > 0)
+							for (X509Certificate c : accIss)
+								certs.add(c);
+					}
 					if (certs.size() > 0) {
 						X509Certificate result[] = new X509Certificate[certs
 								.size()];
