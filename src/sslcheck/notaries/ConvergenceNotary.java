@@ -1,12 +1,7 @@
 package sslcheck.notaries;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -31,6 +26,26 @@ public class ConvergenceNotary extends Notary {
 			.getLogger("notaries.Convergence");
 
 	@Override
+	public void initialize() {
+
+		this.setTrustManager(new X509TrustManager() {
+
+			public void checkClientTrusted(final X509Certificate[] chain,
+					final String authType) {
+			}
+
+			public void checkServerTrusted(final X509Certificate[] chain,
+					final String authType) {
+			}
+
+			public X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		});
+
+	}
+
+	@Override
 	public float check(TLSConnectionInfo tls) throws NotaryException {
 		String h = tls.getRemoteHost();
 		TLSCertificate c = tls.getCertificates();
@@ -50,7 +65,8 @@ public class ConvergenceNotary extends Notary {
 		Client client = Client.create(jerseyClientConfig);
 
 		String _configuredNotaries = this.getConfigParam("notaries");
-		String configuredNotaries = (_configuredNotaries != null) ? _configuredNotaries : "https://notary.thoughtcrime.org:443/target/";
+		String configuredNotaries = (_configuredNotaries != null) ? _configuredNotaries
+				: "https://notary.thoughtcrime.org:443/target/";
 		String[] notaryURLs = configuredNotaries.split(",");
 
 		// see
@@ -60,123 +76,91 @@ public class ConvergenceNotary extends Notary {
 
 		float result = 0f;
 
-		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+		for (String notaryURL : notaryURLs) {
 
-			public void checkClientTrusted(final X509Certificate[] chain,
-					final String authType) {
-			}
+			try {
 
-			public void checkServerTrusted(final X509Certificate[] chain,
-					final String authType) {
-			}
+				WebResource service = client.resource(notaryURL);
 
-			public X509Certificate[] getAcceptedIssuers() {
-				return null;
-				// TODO
-			}
-		} };
+				// Creating POST-Request
+				// MultivaluedMap -> see
+				// https://stackoverflow.com/questions/2136119/using-the-jersey-client-to-do-a-post-operation
+				MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+				formData.add("fingerprint", convergenceCompatibleHash);
+				ClientResponse data = service
+						.path(h + "+" + Integer.toString(port))
+						.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+						.post(ClientResponse.class, formData);
 
-		try {
+				if (data.hasEntity()) {
 
-			SSLContext sslContext = SSLContext.getInstance("TLS");
+					String json = data.getEntity(String.class);
+					int status = data.getStatus();
 
-			sslContext.init(null, trustAllCerts,
-					new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
-					.getSocketFactory());
+					log.debug(notaryURL + ": Status "
+							+ Integer.toString(data.getStatus()) + " | Body: "
+							+ json + "...");
 
-			for (String notaryURL : notaryURLs) {
+					// See documentation for details
+					if (status == 400 || status == 503) {
 
-				try {
+						log.error(String.format("%1: Internal error: %2",
+								notaryURL, json));
+						continue;
 
-					WebResource service = client.resource(notaryURL);
+					} else if (status == 200) {
 
-					// Creating POST-Request
-					// MultivaluedMap -> see
-					// https://stackoverflow.com/questions/2136119/using-the-jersey-client-to-do-a-post-operation
-					MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-					formData.add("fingerprint", convergenceCompatibleHash);
-					ClientResponse data = service
-							.path(h + "+" + Integer.toString(port))
-							.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
-							.post(ClientResponse.class, formData);
+						successCount++;
 
-					if (data.hasEntity()) {
+					} else if (status == 303) {
 
-						String json = data.getEntity(String.class);
-						int status = data.getStatus();
+						checkedNotaryCount--;
 
-						log.debug(notaryURL+": Status "
-								+ Integer.toString(data.getStatus())
-								+ " | Body: " + json + "...");
+					} else if (status == 409) {
 
-						// See documentation for details
-						if (status == 400 || status == 503) {
+						log.info(String.format(
+								"%1: POSSIBLE SECURITY PROBLEM!!!", notaryURL));
 
-							log.error(String.format("%1: Internal error: %2",
-									notaryURL, json));
-							continue;
+					} else {
 
-						} else if (status == 200) {
-
-							successCount++;
-
-						} else if (status == 303) {
-
-							checkedNotaryCount--;
-
-						} else if (status == 409) {
-
-							log.info(String.format(
-									"%1: POSSIBLE SECURITY PROBLEM!!!",
-									notaryURL));
-
-						} else {
-
-							log.info(String.format(
-									"%1: Received unknown status code!",
-									notaryURL));
-
-						}
-
-						checkedNotaryCount++;
+						log.info(String.format(
+								"%1: Received unknown status code!", notaryURL));
 
 					}
 
-				} catch (Exception e) {
-					log.error("General Exception... " + e);
+					checkedNotaryCount++;
+
 				}
 
+			} catch (Exception e) {
+				log.error("General Exception... " + e);
 			}
 
-			String _tmp = this.getConfigParam("decisionMethod");
-			String decisionMethod = (_tmp != null) ? _tmp : "minority";
+		}
 
-			// See documentation for details
-			if (decisionMethod.equals("minority") && successCount > 0) { // Minority
+		String _tmp = this.getConfigParam("decisionMethod");
+		String decisionMethod = (_tmp != null) ? _tmp : "minority";
 
+		// See documentation for details
+		if (decisionMethod.equals("minority") && successCount > 0) { // Minority
+
+			result = 10;
+
+		} else if (successCount <= 0 || decisionMethod.equals("consensus") // Consensus
+				&& (successCount > checkedNotaryCount)) {
+
+			result = 0;
+
+		} else { // Majority
+
+			int maj = (int) Math.floor(checkedNotaryCount / 2);
+			if ((checkedNotaryCount / 2) % 2 != 0)
+				maj++;
+			if (successCount >= maj)
 				result = 10;
 
-			} else if (successCount <= 0 || decisionMethod.equals("consensus") // Consensus
-					&& (successCount > checkedNotaryCount)) {
-
-				result = 0;
-
-			} else { // Majority
-
-				int maj = (int) Math.floor(checkedNotaryCount / 2);
-				if ((checkedNotaryCount / 2) % 2 != 0)
-					maj++;
-				if (successCount >= maj)
-					result = 10;
-
-			}
-
-		} catch (NoSuchAlgorithmException e1) {
-			log.error("NoAlgorithmException: " + e1);
-		} catch (KeyManagementException e1) {
-			log.error("KeyManagementException: " + e1);
 		}
+
 		log.trace("-- DONE -- ConvergenceNotary.check() ");
 		return result;
 	}
