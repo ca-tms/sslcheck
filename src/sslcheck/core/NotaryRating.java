@@ -88,7 +88,9 @@ public class NotaryRating {
 	}
 
 	public float getScore(int i) {
-		float r = this.ratings.get(i);
+		float r = 0;
+		if(this.ratings.size()>0)
+			r = this.ratings.get(i);
 		// this.ratings.remove(i);
 		return r;
 	}
