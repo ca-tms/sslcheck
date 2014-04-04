@@ -21,11 +21,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
-import sslcheck.core.NotaryRating;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSConnectionInfo;
-import sslcheck.notaries.ICSINotary; // see lines 82-90
-import sslcheck.notaries.ConvergenceNotary; // see lines 82-90
+//import sslcheck.notaries.ICSINotary; // see lines 82-90
+//import sslcheck.notaries.ConvergenceNotary; // see lines 82-90
 
 /**
  * This is a simple Server accessing all objects in a direct way without
@@ -47,89 +46,82 @@ public class SimpleServerWithoutAdapter {
 		// NotaryConfiguration notaryConf = NotaryConfiguration.getInstance();
 		// NotaryRating notaryRating = NotaryRating.getInstance();
 
-		String[] hosts = {"https://en.wikipedia.org/", "https://www.cacert.org/"};
-		for(String host : hosts) {
-		
-		try {
-			
-			URL urlObject = new URL(host);
-			int port = 443;
-			
-			log.trace("Connecting to Host...");
+		String[] hosts = { "https://en.wikipedia.org/"
+		// , "https://www.cacert.org/"
+		};
+		for (String host : hosts) {
 
-			// Code from https://code.google.com/p/misc-utils/wiki/JavaHttpsUrl
-			final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			try {
 
-				public void checkClientTrusted(final X509Certificate[] chain,
-						final String authType) {
-				}
+				URL urlObject = new URL(host);
+				int port = 443;
 
-				public void checkServerTrusted(final X509Certificate[] chain,
-						final String authType) {
-				}
+				// Initialize Notaries by using NotaryManager
+				// Either...
+				NotaryManager nm = new NotaryManager();
+				// or...
+				// ICSINotary nm = new ICSINotary();
+				// or...
+				// ConvergenceNotary nm = new ConvergenceNotary();
 
-				public X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-			} };
+				log.trace("Connecting to Host...");
 
-			// Install the all-trusting trust manager
-			final SSLContext sslContext = SSLContext.getInstance("TLS");
-			sslContext.init(null, trustAllCerts,
-					new java.security.SecureRandom());
+				// Code from
+				// https://code.google.com/p/misc-utils/wiki/JavaHttpsUrl
 
-			// Install as default TLS Socket Factory, so it is also used by
-			// notaries!
-			// https://stackoverflow.com/questions/6047996/ignore-self-signed-ssl-cert-using-jersey-client
-			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
-					.getSocketFactory());
+				// TODO use nm.getTrustManager();
 
-			// Create an ssl socket factory with our all-trusting manager
-			final SSLSocketFactory factory = sslContext.getSocketFactory();
-			SSLSocket socket;
-			Certificate[] servercerts = {};
-			socket = (SSLSocket) factory.createSocket(urlObject.getHost(), port);
-			socket.startHandshake();
-			SSLSession session = socket.getSession();
+				// Install the all-trusting trust manager
+				final SSLContext sslContext = SSLContext.getInstance("TLS");
+				sslContext.init(null,
+						new TrustManager[] { nm.getTrustManager() 
+						},
+						new java.security.SecureRandom());
 
-			// Extract Certificates
-			servercerts = session.getPeerCertificates();
-			TLSConnectionInfo sslinfo;
-			sslinfo = new TLSConnectionInfo(host, port,
-					(X509Certificate[]) servercerts);
+				// Install as default TLS Socket Factory, so it is also used by
+				// notaries!
+				// https://stackoverflow.com/questions/6047996/ignore-self-signed-ssl-cert-using-jersey-client
+				HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
+						.getSocketFactory());
 
-			// Initialize Notaries by using NotaryManager
-			// Either...
-			NotaryManager nm = new NotaryManager();
-			// or...
-			// ICSINotary nm = new ICSINotary();
-			// or...
-			// ConvergenceNotary nm = new ConvergenceNotary();
+				// Create an ssl socket factory with our all-trusting manager
+				final SSLSocketFactory factory = sslContext.getSocketFactory();
+				SSLSocket socket;
+				Certificate[] servercerts = {};
+				socket = (SSLSocket) factory.createSocket(urlObject.getHost(),
+						port);
+				socket.startHandshake();
+				SSLSession session = socket.getSession();
 
-			// Print Information about Certificates
-			// log.info("Printing Certificates: \n"+sslinfo.toString());
+				// Extract Certificates
+				servercerts = session.getPeerCertificates();
+				TLSConnectionInfo sslinfo;
+				sslinfo = new TLSConnectionInfo(host, port,
+						(X509Certificate[]) servercerts);
 
-			// Check Certificates using NotaryManager
-			log.trace("-- BEGIN -- Checking Certificates...");
-			log.info("Rating: " + sslinfo.validateCertificates(nm));
-			if(sslinfo.isTrusted())
-				log.info("Trustworthy.");
-			else
-				log.info("Not trustworthy.");
-			log.trace("-- END -- Checking Certificates...");
-			
+				// Print Information about Certificates
+				// log.info("Printing Certificates: \n"+sslinfo.toString());
 
-			//NotaryRating.getInstance().clear();
-			
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (MalformedURLException e1) {
-			e1.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TLSCertificateException e) {
-			log.error("Can'parse certificate!!! Error: " + e);
-		}
+				// Check Certificates using NotaryManager
+				log.trace("-- BEGIN -- Checking Certificates...");
+				log.info("Rating: " + sslinfo.validateCertificates(nm));
+				if (sslinfo.isTrusted())
+					log.info("Trustworthy.");
+				else
+					log.info("Not trustworthy.");
+				log.trace("-- END -- Checking Certificates...");
+
+				// NotaryRating.getInstance().clear();
+
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (TLSCertificateException e) {
+				log.error("Can'parse certificate!!! Error: " + e);
+			}
 
 		}
 		log.trace("Done.");

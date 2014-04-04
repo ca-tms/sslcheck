@@ -1,7 +1,12 @@
 package sslcheck.core;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +32,7 @@ public class NotaryManager extends Notary {
 	Iterator<Notary> iterNot;
 	NotaryConfiguration notaryConf;
 	NotaryRating notaryRating;
+	ArrayList<X509TrustManager> trustManagers = new ArrayList<X509TrustManager>();
 
 	private final static Logger log = LogManager
 			.getLogger("core.NotaryManager");
@@ -49,10 +55,51 @@ public class NotaryManager extends Notary {
 			log.trace("Adding notaries...");
 			for (String notary : this.notaryConf.getNotariesFromConfiguration()) {
 				if (this.notaryConf.getValue("enabled", notary).equals("true")) {
+					
+					// Create Instance 
 					Notary n = (Notary) Class.forName(
 							"sslcheck.notaries." + notary).newInstance();
+					
+					// Set name and configuration and initialize
 					n.setNotaryName(this.notaryConf.getName(notary));
 					n.setConfiguration(this.notaryConf.getNotaryConfiguration(this.notaryConf.getName(notary)));
+					n.initialize();
+					
+					// Get TrustManagers if available
+					if(n.hasTrustManager()) {
+						trustManagers.add(n.getTrustManager());
+					}
+					this.setTrustManager(new X509TrustManager() {
+
+						@Override
+						public void checkClientTrusted(X509Certificate[] arg0,
+								String arg1) throws CertificateException {
+							for(X509TrustManager tm : trustManagers)
+								tm.checkClientTrusted(arg0, arg1);
+							
+						}
+
+						@Override
+						public void checkServerTrusted(X509Certificate[] arg0,
+								String arg1) throws CertificateException {
+							for(X509TrustManager tm : trustManagers)
+								tm.checkServerTrusted(arg0, arg1);
+							
+						}
+
+						@Override
+						public X509Certificate[] getAcceptedIssuers() {
+							ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+							for(X509TrustManager tm : trustManagers)
+								for(X509Certificate c : tm.getAcceptedIssuers())
+									certs.add(c);
+							X509Certificate result[] = new X509Certificate[certs.size()];
+							return certs.toArray(result);
+						}
+						
+					});
+					
+					// Add Notary to list of available notaries
 					this.addNotary(n);
 
 				}

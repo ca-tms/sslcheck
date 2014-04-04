@@ -2,6 +2,8 @@ package sslcheck.notaries;
 
 import java.util.Properties;
 
+import javax.net.ssl.X509TrustManager;
+
 import sslcheck.core.TLSConnectionInfo;
 
 public abstract class Notary {
@@ -13,6 +15,7 @@ public abstract class Notary {
 	 */
 	String __notaryName__ = "";
 	Properties __config__;
+	private X509TrustManager __trustManager__ = null;
 	
 	public String getNotaryName() {
 		return this.__notaryName__;
@@ -32,11 +35,32 @@ public abstract class Notary {
 		return null;
 	}
 	
+	public boolean hasTrustManager() {
+		return this.__trustManager__ == null;
+	}
+	
+	public X509TrustManager getTrustManager() {
+		return this.__trustManager__;
+	}
+	
+	protected void setTrustManager(X509TrustManager tm) {
+		this.__trustManager__ = tm;
+	}
+	
+
+	public void initialize() {
+		// Default: do nothing..
+	}
+
+	
 	/**
 	 * 
 	 * @param sslinfo
 	 * @return Rating-Information derived from Notary Result
 	 */
 	public abstract float check(TLSConnectionInfo tls) throws NotaryException;
+
+
+	
 	
 }
