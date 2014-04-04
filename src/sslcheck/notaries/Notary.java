@@ -36,7 +36,7 @@ public abstract class Notary {
 	}
 	
 	public boolean hasTrustManager() {
-		return this.__trustManager__ == null;
+		return !(this.__trustManager__ == null);
 	}
 	
 	public X509TrustManager getTrustManager() {
