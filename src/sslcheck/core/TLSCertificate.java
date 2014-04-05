@@ -55,6 +55,7 @@ public class TLSCertificate extends java.security.cert.X509Certificate {
 		log.debug("Adding certificate " + (certPath.length - 1) + ":");
 		log.debug("--- Subject: " + lastCert.getSubjectDN().toString());
 		log.debug("--- Issuer: " + lastCert.getIssuerDN().toString());
+		log.debug("--- SHA256: " + lastCert.getFingerprint("SHA-256"));
 		log.debug("--- SHA1: " + lastCert.getSHA1Fingerprint());
 		log.debug("--- MD5: " + lastCert.getMD5Fingerprint());
 		for (int i = certPath.length - 2; i >= 0; i--) {
@@ -62,6 +63,7 @@ public class TLSCertificate extends java.security.cert.X509Certificate {
 			log.debug("Adding certificate " + i + ":");
 			log.debug("--- Subject: " + lastCert.getSubjectDN());
 			log.debug("--- Issuer: " + lastCert.getIssuerDN());
+			log.debug("--- SHA256: " + lastCert.getFingerprint("SHA-256"));
 			log.debug("--- SHA1: " + lastCert.getSHA1Fingerprint());
 			log.debug("--- MD5: " + lastCert.getMD5Fingerprint());
 		}
