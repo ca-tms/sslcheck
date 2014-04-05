@@ -28,7 +28,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>sslcheck.server.SimpleServerWithoutAdapter</mainClass>
+							<mainClass>sslcheck.test.SimpleTestURL</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -52,7 +52,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>sslcheck.server.SimpleServerWithoutAdapter</mainClass>
+							<mainClass>sslcheck.test.SimpleTestURL</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

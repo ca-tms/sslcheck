@@ -1,4 +1,4 @@
-package sslcheck.server;
+package sslcheck.test;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -36,7 +36,7 @@ import sslcheck.core.TLSConnectionInfo;
  * @author letzkus
  * 
  */
-public class SimpleServerWithoutAdapter {
+public class SimpleTestUrl {
 
 	private final static Logger log = LogManager.getRootLogger();
 
@@ -46,7 +46,7 @@ public class SimpleServerWithoutAdapter {
 		// NotaryConfiguration notaryConf = NotaryConfiguration.getInstance();
 		// NotaryRating notaryRating = NotaryRating.getInstance();
 
-		String[] hosts = { "https://en.wikipedia.org/"
+		String[] hosts = { "https://saanet.sg/"
 		// , "https://www.cacert.org/"
 		};
 		for (String host : hosts) {
