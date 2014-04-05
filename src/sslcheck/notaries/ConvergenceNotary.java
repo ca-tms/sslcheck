@@ -104,7 +104,7 @@ public class ConvergenceNotary extends Notary {
 					// See documentation for details
 					if (status == 400 || status == 503) {
 
-						log.error(String.format("%1: Internal error: %2",
+						log.error(String.format("%s: Internal error: %s",
 								notaryURL, json));
 						continue;
 
@@ -119,12 +119,12 @@ public class ConvergenceNotary extends Notary {
 					} else if (status == 409) {
 
 						log.info(String.format(
-								"%1: POSSIBLE SECURITY PROBLEM!!!", notaryURL));
+								"%s: POSSIBLE SECURITY PROBLEM!!!", notaryURL));
 
 					} else {
 
 						log.info(String.format(
-								"%1: Received unknown status code!", notaryURL));
+								"%s: Received unknown status code!", notaryURL));
 
 					}
 
