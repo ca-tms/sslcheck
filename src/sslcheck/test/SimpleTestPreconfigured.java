@@ -79,13 +79,36 @@ public class SimpleTestPreconfigured {
 
 			try {
 
-				// Initialize Notaries by using NotaryManager
+				/*
+				 * Initialize Notaries by using NotaryManager
+				 */
 				log.trace("Initializing NotaryManager...");
 				NotaryManager nm = new NotaryManager();
-				// ICSINotary nm = new ICSINotary();
-				// ConvergenceNotary nm = new ConvergenceNotary();
+				/*
+				 * You can also instantiate the notaries directly:
+				 * 	ICSINotary icsi = new ICSINotary();
+				 *	ConvergenceNotary convergence = new ConvergenceNotary();
+				 *	SSLObservatoryNotary sslobservatory = new SSLObservatoryNotary();
+				 * Or remove them from NotaryManager:
+				 *  nm.disableNotary("ICSINotary");
+				 *  nm.disableNotary("ConvergenceNotary");
+				 *  nm.disableNotary("SSLObservatoryNotary");
+				 * Or enable previously disabled Notaries (but you can not enable Notaries disabled via configuration file!)
+				 *	nm.enableNotary("ICSINotary");
+				 * You can add new Notaries to the NotaryManager (setting Name, Configuration and TrustManager has to be done manually!):
+				 *	CrossbearNotary crossbear = new CrossbearNotary();
+				 *	crossbear.setNotaryName("CrossbearNotary"); // Name
+				 *	crossbear.setConfiguration(....); // Configuration
+				 *	crossbear.initialize(); // for example: TrustManager, Session Management, ...
+				 * 	nm.addNotary(crossbear);
+				 * 
+				 * PLEASE BEWARE: If you don't use NotaryManager, there will be no integration of NotaryRating or NotaryConfiguration
+				 */
+				
 
-				// Install the all-trusting trust manager
+				/*
+				 * Install Trust Managers
+				 */
 				log.trace("Configuring Trust Managers...");
 				final SSLContext sslContext = SSLContext.getInstance("TLS");
 				sslContext.init(null,
@@ -94,21 +117,48 @@ public class SimpleTestPreconfigured {
 				HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
 						.getSocketFactory());
 
-				// Build objects
+				/*
+				 * Build TLSConnectionInfo
+				 */
 				log.trace("Building TLSConnectionInfo-Object...");
 				TLSConnectionInfo sslinfo = new TLSConnectionInfo(
 						url.toString(), url.getDefaultPort(),
 						certificates.get(url));
 
-				// Check Certificates using NotaryManager
+				/*
+				 * Check Certificates using NotaryManager
+				 */
 				log.trace("-- BEGIN -- Checking Certificates...");
 				log.info("Rating: " + sslinfo.validateCertificates(nm));
+				/*
+				 * Check Certificates using Notaries:
+				 * 	try{
+				 * 		crossbear.check(sslinfo)
+				 * 	}catch(NotaryException e)
+				 * 		// Do something...
+				 * 	}
+				 * 
+				 * By using NotaryManager, one will not be concerned with exceptions
+				 */
+				
+				/* 
+				 * Is Certificate/Host-Relationship trustworthy?
+				 */
 				try {
 					if (sslinfo.isTrusted())
+						/*
+						 * Yes
+						 */
 						log.info("Trustworthy.");
 					else
+						/*
+						 * No
+						 */
 						log.info("Not trustworthy.");
 				} catch (NotaryRatingException e) {
+					/*
+					 * Not decidable. 
+					 */
 					log.info("Trust could not be evaluated: "+e);
 				}
 				log.trace("-- END -- Checking Certificates...");

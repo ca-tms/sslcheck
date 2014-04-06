@@ -2,6 +2,9 @@ package sslcheck.core;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import sslcheck.notaries.Notary;
 import sslcheck.notaries.NotaryException;
@@ -14,27 +17,32 @@ import sslcheck.notaries.NotaryException;
  * @author letzkus
  * 
  */
-public class TLSConnectionInfo {
+public class TLSConnectionInfo{
 
 	String remoteHost;
 	int remotePort;
 	TLSCertificate certificates;
+	Iterator<Certificate> certIterator;
 
 	public TLSCertificate getCertificates() {
 		return certificates;
 	}
 
 	public TLSConnectionInfo(String remoteHost, int port,
-			java.security.cert.Certificate[] servercerts)
+			Certificate[] servercerts)
 			throws TLSCertificateException, MalformedURLException {
 		this.remoteHost = new URL(remoteHost).getHost();
 		this.remotePort = port;
 		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
+		ArrayList<Certificate> ci = new ArrayList<Certificate>();
+		for(Certificate c : servercerts)
+			ci.add(c);
+		this.certIterator = ci.iterator();
 	}
 
 	public TLSConnectionInfo(String host,
-			java.security.cert.Certificate[] servercerts)
+			Certificate[] servercerts)
 			throws TLSCertificateException, MalformedURLException {
 		URL url = new URL(host);
 		this.remoteHost = url.getHost();
@@ -42,6 +50,10 @@ public class TLSConnectionInfo {
 				.getDefaultPort();
 		this.certificates = TLSCertificate
 				.constructX509CertificatePath(servercerts);
+		ArrayList<Certificate> ci = new ArrayList<Certificate>();
+		for(Certificate c : servercerts)
+			ci.add(c);
+		this.certIterator = ci.iterator();
 	}
 
 	/**
@@ -62,8 +74,9 @@ public class TLSConnectionInfo {
 	/**
 	 * Detemines, whether the connection is trustworthy or not.
 	 * @return true/false trusted/non trusted
+	 * @throws NotaryRatingException 
 	 */
-	public boolean isTrusted() {
+	public boolean isTrusted() throws NotaryRatingException {
 		NotaryRating nr = NotaryRating.getInstance();
 		return nr.isPossiblyTrusted(hashCode());
 	}
@@ -114,5 +127,9 @@ public class TLSConnectionInfo {
 		// uses hashCode of String
 		return hash.hashCode();
 			
+	}
+	
+	public Iterator<Certificate> getCertIterator() {
+		return this.certIterator;
 	}
 }

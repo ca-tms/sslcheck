@@ -171,10 +171,12 @@ public class NotaryManager extends Notary {
 	 *            the notary object to be added
 	 */
 	public void addNotary(Notary n) {
-		if (n != null) {
+		if (n != null && !n.getNotaryName().equals("")) {
 			log.trace("Adding notary " + n.getNotaryName());
 			this.notaries.add(n);
 			this.enabledNotaries.add(n); // All notaries enabled by default
+		}else{
+			log.error("Notary was not added, because there Object was null or name was not set.");
 		}
 	}
 
@@ -185,10 +187,10 @@ public class NotaryManager extends Notary {
 	 *            Information regarding the tls connection, e.g. certificates,
 	 *            host, port
 	 * @return Validity score
-	 * @throws NotaryRatingException 
+	 * @throws NotaryException  
 	 */
 	@Override
-	public float check(TLSConnectionInfo tls) {
+	public float check(TLSConnectionInfo tls) throws NotaryException {
 		for (Notary n : this.enabledNotaries) {
 			log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
 			try {
@@ -202,6 +204,10 @@ public class NotaryManager extends Notary {
 			}
 			log.trace("-- END -- Checking notary " + n.getNotaryName());
 		}
-		return notaryRating.getScore(tls.hashCode());
+		try {
+			return notaryRating.getScore(tls.hashCode());
+		} catch (NotaryRatingException e) {
+			throw new NotaryException("RatingException: "+e);
+		}
 	}
 }

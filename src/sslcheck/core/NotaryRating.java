@@ -89,14 +89,16 @@ public class NotaryRating {
 	}
 
 	@Deprecated
-	public float calculateScore(int h) {
+	public float calculateScore(int h) throws NotaryRatingException {
 		return this.getScore(h);
 	}
 
-	public float getScore(int i) {
+	public float getScore(int i) throws NotaryRatingException {
 		float r = 0;
 		if (this.ratings.size() > 0)
 			r = this.ratings.get(i);
+		else
+			throw new NotaryRatingException("There were no notaries to calculate a valid score.");
 		// this.ratings.remove(i);
 		return r;
 	}
@@ -133,20 +135,14 @@ public class NotaryRating {
 			float trustLimit = Float.parseFloat(this.notaryConf
 					.getValue("trustLimit"));
 			synchronized (this.ratings) {
-				if (this.ratings.size() > 0) {
 					return this.getScore(ident) > max * trustLimit;
-				} else {
-					throw new NotaryRatingException(
-							"Rating not available, since no Notary was available.");
-				}
 			}
-
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to int or float in isPossiblyTrusted");
-			return false;
+			throw new NotaryRatingException("Internal Error -> not decidable: "+e);
 		} catch (NotaryConfigurationException e) {
 			log.error("Error reading maxRating/trustLimit from Configuration in isPossiblyTrusted.");
-			return false;
+			throw new NotaryRatingException("Internal Error -> not decidable!");
 		}
 	}
 }
