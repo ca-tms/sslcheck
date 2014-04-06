@@ -26,7 +26,13 @@ public class NotaryRating {
 
 	public void addRating(Integer i, String notary, float f)
 			throws NotaryRatingException {
+
 		try {
+
+			if (this.notaryConf.getValue("countable", notary).equals("false")) {
+				log.debug("Rating for " + notary + " not added.");
+				return;
+			}
 
 			float minRating = Float.parseFloat(this.notaryConf.getValue(
 					"minRating", notary));
@@ -89,7 +95,7 @@ public class NotaryRating {
 
 	public float getScore(int i) {
 		float r = 0;
-		if(this.ratings.size()>0)
+		if (this.ratings.size() > 0)
 			r = this.ratings.get(i);
 		// this.ratings.remove(i);
 		return r;
@@ -121,13 +127,18 @@ public class NotaryRating {
 		}
 	}
 
-	public boolean isPossiblyTrusted(int ident) {
+	public boolean isPossiblyTrusted(int ident) throws NotaryRatingException {
 		try {
 			int max = Integer.parseInt(this.notaryConf.getValue("maxRating"));
 			float trustLimit = Float.parseFloat(this.notaryConf
 					.getValue("trustLimit"));
 			synchronized (this.ratings) {
-				return this.getScore(ident) > max * trustLimit;
+				if (this.ratings.size() > 0) {
+					return this.getScore(ident) > max * trustLimit;
+				} else {
+					throw new NotaryRatingException(
+							"Rating not available, since no Notary was available.");
+				}
 			}
 
 		} catch (NumberFormatException e) {

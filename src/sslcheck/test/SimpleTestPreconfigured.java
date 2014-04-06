@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import com.sun.jersey.core.util.Base64;
 
 import sslcheck.core.NotaryManager;
+import sslcheck.core.NotaryRatingException;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSConnectionInfo;
 
@@ -102,10 +103,14 @@ public class SimpleTestPreconfigured {
 				// Check Certificates using NotaryManager
 				log.trace("-- BEGIN -- Checking Certificates...");
 				log.info("Rating: " + sslinfo.validateCertificates(nm));
-				if (sslinfo.isTrusted())
-					log.info("Trustworthy.");
-				else
-					log.info("Not trustworthy.");
+				try {
+					if (sslinfo.isTrusted())
+						log.info("Trustworthy.");
+					else
+						log.info("Not trustworthy.");
+				} catch (NotaryRatingException e) {
+					log.info("Trust could not be evaluated: "+e);
+				}
 				log.trace("-- END -- Checking Certificates...");
 
 			} catch (TLSCertificateException | MalformedURLException e) {

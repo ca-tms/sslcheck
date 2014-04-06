@@ -15,12 +15,12 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
+import sslcheck.core.NotaryRatingException;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSConnectionInfo;
 //import sslcheck.notaries.ICSINotary; // see lines 82-90
@@ -105,10 +105,14 @@ public class SimpleTestUrl {
 				// Check Certificates using NotaryManager
 				log.trace("-- BEGIN -- Checking Certificates...");
 				log.info("Rating: " + sslinfo.validateCertificates(nm));
-				if (sslinfo.isTrusted())
-					log.info("Trustworthy.");
-				else
-					log.info("Not trustworthy.");
+				try {
+					if (sslinfo.isTrusted())
+						log.info("Trustworthy.");
+					else
+						log.info("Not trustworthy.");
+				} catch (NotaryRatingException e) {
+					log.info("Trust could not be evaluated: "+e);
+				}
 				log.trace("-- END -- Checking Certificates...");
 
 				// NotaryRating.getInstance().clear();
