@@ -2,14 +2,9 @@ package sslcheck.notaries;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -53,7 +48,7 @@ public class SSLObservatoryNotary extends Notary {
 	}
 
 	@Override
-	public float check(TLSConnectionInfo tls) {
+	public float check(TLSConnectionInfo tls) throws NotaryException {
 
 		log.trace("-- BEGIN -- SSLObervatory.check()");
 
@@ -115,7 +110,7 @@ public class SSLObservatoryNotary extends Notary {
 
 		} catch (UnknownHostException | CertificateEncodingException e) {
 			log.error("Java Exception thrown: "+e);
-			result = 0;
+			throw new NotaryException("Java Exception thrown: "+e);
 		}
 		
 		return result;
