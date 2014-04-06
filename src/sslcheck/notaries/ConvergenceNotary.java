@@ -134,6 +134,7 @@ public class ConvergenceNotary extends Notary {
 
 			} catch (Exception e) {
 				log.error("General Exception... " + e);
+				throw new NotaryException("General Exception... " + e);
 			}
 
 		}
