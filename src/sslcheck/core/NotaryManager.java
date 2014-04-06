@@ -5,7 +5,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.logging.log4j.LogManager;
@@ -69,6 +68,7 @@ public class NotaryManager extends Notary {
 
 					// Get TrustManagers if available
 					if (n.hasTrustManager()) {
+						log.debug("Adding TrustManager for "+n.getNotaryName());
 						trustManagers.add(n.getTrustManager());
 					}
 
@@ -78,6 +78,7 @@ public class NotaryManager extends Notary {
 				}
 			}
 			// Add TrustManagers
+			
 			this.setTrustManager(new X509TrustManager() {
 
 				@Override
@@ -184,21 +185,22 @@ public class NotaryManager extends Notary {
 	 *            Information regarding the tls connection, e.g. certificates,
 	 *            host, port
 	 * @return Validity score
+	 * @throws NotaryRatingException 
 	 */
 	@Override
 	public float check(TLSConnectionInfo tls) {
 		for (Notary n : this.enabledNotaries) {
+			log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
 			try {
-				log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
 				notaryRating.addRating(tls.hashCode(), n.getNotaryName(),
 						n.check(tls));
-				log.trace("-- END -- Checking notary " + n.getNotaryName());
 			} catch (NotaryRatingException e) {
 				log.error(e.getMessage());
 			} catch (NotaryException e) {
 				log.error("Could not check notary " + n
 						+ " because of internal errors: " + e);
 			}
+			log.trace("-- END -- Checking notary " + n.getNotaryName());
 		}
 		return notaryRating.getScore(tls.hashCode());
 	}
