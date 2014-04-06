@@ -28,14 +28,14 @@ public class ICSINotary extends Notary {
 
 		String _tmp;
 
-		_tmp = this.getConfigParam("lastSeenThreshold");
+		_tmp = this.getParam("lastSeenThreshold");
 		int lastSeenThreshold = (_tmp != null) ? Integer.parseInt(_tmp) : 1; //30
 
-		_tmp = this.getConfigParam("firstSeenMinThreshold");
+		_tmp = this.getParam("firstSeenMinThreshold");
 		int firstSeenMinThreshold = (_tmp != null) ? Integer.parseInt(_tmp)
 				: 1; // 720
 
-		_tmp = this.getConfigParam("firstSeenOptimalThreshold");
+		_tmp = this.getParam("firstSeenOptimalThreshold");
 		int firstSeenOptimalThreshold = (_tmp != null) ? Integer.parseInt(_tmp)
 				: 1; // 365
 		

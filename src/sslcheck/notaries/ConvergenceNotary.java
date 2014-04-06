@@ -64,7 +64,7 @@ public class ConvergenceNotary extends Notary {
 				JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 		Client client = Client.create(jerseyClientConfig);
 
-		String _configuredNotaries = this.getConfigParam("notaries");
+		String _configuredNotaries = this.getParam("notaries");
 		String configuredNotaries = (_configuredNotaries != null) ? _configuredNotaries
 				: "https://notary.thoughtcrime.org:443/target/";
 		String[] notaryURLs = configuredNotaries.split(",");
@@ -139,7 +139,7 @@ public class ConvergenceNotary extends Notary {
 
 		}
 
-		String _tmp = this.getConfigParam("decisionMethod");
+		String _tmp = this.getParam("decisionMethod");
 		String decisionMethod = (_tmp != null) ? _tmp : "minority";
 
 		// See documentation for details

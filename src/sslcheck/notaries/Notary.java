@@ -29,7 +29,7 @@ public abstract class Notary {
 		this.__config__ = p;
 	}
 	
-	public String getConfigParam(String param) {
+	public String getParam(String param) {
 		if(this.__config__ != null)
 			return this.__config__.getProperty(param);
 		return null;
