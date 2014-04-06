@@ -1,6 +1,8 @@
 package sslcheck.core;
 
-public class NotaryConfigurationException extends Exception {
+import sslcheck.notaries.NotaryException;
+
+public class NotaryConfigurationException extends NotaryException {
 
 	/**
 	 * 

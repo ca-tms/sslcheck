@@ -62,13 +62,10 @@ public class TLSConnectionInfo{
 	 * @param n
 	 *            the Notary
 	 * @return Result of validation. Can be -1 in case of an internal error.
+	 * @throws NotaryException 
 	 */
-	public float validateCertificates(Notary n) {
-		try {
-			return n.check(this);
-		} catch (NotaryException e) {
-			return -1;
-		}
+	public float validateCertificates(Notary n) throws NotaryException {
+		return n.check(this);
 	}
 	
 	/**

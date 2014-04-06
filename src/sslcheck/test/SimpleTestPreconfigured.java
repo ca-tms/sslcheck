@@ -23,6 +23,7 @@ import sslcheck.core.NotaryManager;
 import sslcheck.core.NotaryRatingException;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSConnectionInfo;
+import sslcheck.notaries.NotaryException;
 
 public class SimpleTestPreconfigured {
 	private final static Logger log = LogManager.getRootLogger();
@@ -129,22 +130,18 @@ public class SimpleTestPreconfigured {
 				 * Check Certificates using NotaryManager
 				 */
 				log.trace("-- BEGIN -- Checking Certificates...");
-				log.info("Rating: " + sslinfo.validateCertificates(nm));
-				/*
-				 * Check Certificates using Notaries:
-				 * 	try{
-				 * 		crossbear.check(sslinfo)
-				 * 	}catch(NotaryException e)
-				 * 		// Do something...
-				 * 	}
-				 * 
-				 * By using NotaryManager, one will not be concerned with exceptions
-				 */
 				
 				/* 
 				 * Is Certificate/Host-Relationship trustworthy?
 				 */
 				try {
+					log.info("Rating: " + Float.toString(sslinfo.validateCertificates(nm)));
+					/*
+					 *	sslinfo.validateCertificates(nm)
+					 * or 
+					 *	nm.check(sslinfo);
+					 */
+					
 					if (sslinfo.isTrusted())
 						/*
 						 * Yes
@@ -155,22 +152,29 @@ public class SimpleTestPreconfigured {
 						 * No
 						 */
 						log.info("Not trustworthy.");
-				} catch (NotaryRatingException e) {
+					
+				} catch (NotaryException e) {
 					/*
 					 * Not decidable. 
 					 */
 					log.info("Trust could not be evaluated: "+e);
+					
+					/*
+					 * You can go on a search...
+					 *	if(e instanceof NotaryRatingException) {
+					 *		...
+					 *	}
+					 *	if(e instanceof NotaryConfigurationException) {
+					 *		...
+					 *	}
+					 */
 				}
 				log.trace("-- END -- Checking Certificates...");
 
 			} catch (TLSCertificateException | MalformedURLException e) {
-				log.error("Can'parse certificate!!! Error: " + e);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (KeyManagementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error("Can'parse certificate/url!!! Error: " + e);
+			} catch (NoSuchAlgorithmException | KeyManagementException e) {
+				log.error("There have been some cryptography-specific errors: " + e);
 			}
 
 		}

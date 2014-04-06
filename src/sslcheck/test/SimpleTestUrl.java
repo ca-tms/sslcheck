@@ -20,9 +20,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.NotaryManager;
-import sslcheck.core.NotaryRatingException;
 import sslcheck.core.TLSCertificateException;
 import sslcheck.core.TLSConnectionInfo;
+import sslcheck.notaries.NotaryException;
 //import sslcheck.notaries.ICSINotary; // see lines 82-90
 //import sslcheck.notaries.ConvergenceNotary; // see lines 82-90
 
@@ -66,11 +66,6 @@ public class SimpleTestUrl {
 
 				log.trace("Connecting to Host...");
 
-				// Code from
-				// https://code.google.com/p/misc-utils/wiki/JavaHttpsUrl
-
-				// TODO use nm.getTrustManager();
-
 				// Install the all-trusting trust manager
 				final SSLContext sslContext = SSLContext.getInstance("TLS");
 				sslContext.init(null,
@@ -104,13 +99,14 @@ public class SimpleTestUrl {
 
 				// Check Certificates using NotaryManager
 				log.trace("-- BEGIN -- Checking Certificates...");
-				log.info("Rating: " + sslinfo.validateCertificates(nm));
+				
 				try {
+					log.info("Rating: " + sslinfo.validateCertificates(nm));
 					if (sslinfo.isTrusted())
 						log.info("Trustworthy.");
 					else
 						log.info("Not trustworthy.");
-				} catch (NotaryRatingException e) {
+				} catch (NotaryException e) {
 					log.info("Trust could not be evaluated: "+e);
 				}
 				log.trace("-- END -- Checking Certificates...");
