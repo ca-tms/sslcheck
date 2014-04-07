@@ -144,12 +144,14 @@ public class ConvergenceNotary extends Notary {
 
 		// See documentation for details
 		if (decisionMethod.equals("minority") && successCount > 0) { // Minority
+			
+			log.info("Minority Voting successful.");
 
 			result = 10;
 
 		} else if (successCount <= 0 || (decisionMethod.equals("consensus") // Consensus
 				&& (successCount < checkedNotaryCount))) {
-
+			
 			result = 0;
 
 		} else { // Majority
@@ -157,8 +159,10 @@ public class ConvergenceNotary extends Notary {
 			int maj = (int) Math.floor(checkedNotaryCount / 2);
 			if ((checkedNotaryCount / 2) % 2 != 0)
 				maj++;
-			if (successCount >= maj)
+			if (successCount >= maj) {
+				log.info("Majority/Consensus Voting successful.");
 				result = 10;
+			}
 
 		}
 
