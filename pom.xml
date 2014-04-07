@@ -4,6 +4,9 @@
 	<groupId>sslcheck</groupId>
 	<artifactId>sslcheck</artifactId>
 	<version>0.8</version>
+	<properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
@@ -17,10 +20,10 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.0</version>
 				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -28,7 +31,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>sslcheck.test.SimpleTestURL</mainClass>
+							<mainClass>sslcheck.test.SimpleTestPreconfiguredCertificate</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -52,7 +55,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>sslcheck.test.SimpleTestURL</mainClass>
+							<mainClass>sslcheck.test.SimpleTestPreconfiguredCertificate</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
