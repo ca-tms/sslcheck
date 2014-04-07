@@ -3,9 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>sslcheck</groupId>
 	<artifactId>sslcheck</artifactId>
-	<version>0.8</version>
+	<version>1.0</version>
 	<properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -58,6 +58,15 @@
 							<mainClass>sslcheck.test.SimpleTestPreconfiguredCertificate</mainClass>
 						</manifest>
 					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.11</version>
+				<configuration>
+					<testSourceDirectory>${basedir}/src/sslcheck/test/</testSourceDirectory>
+					<testClassesDirectory>${project.build.directory}/classes/</testClassesDirectory>
+					<groups>sslcheck.test.Test</groups>
 				</configuration>
 			</plugin>
 		</plugins>
