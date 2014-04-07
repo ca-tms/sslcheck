@@ -62,6 +62,7 @@ public class SSLObservatoryNotary extends Notary {
 		
 		try {
 
+			client.setConnectTimeout(Integer.valueOf(this.getParam("serverTimeout")));
 			WebResource service = client
 					.resource("https://observatory.eff.org/");
 			
@@ -111,6 +112,9 @@ public class SSLObservatoryNotary extends Notary {
 		} catch (UnknownHostException | CertificateEncodingException e) {
 			log.error("Java Exception thrown: "+e);
 			throw new NotaryException("Java Exception thrown: "+e);
+		} catch (Exception e) {
+			log.error("General Exception thrown: "+e);
+			throw new NotaryException("General Exception thrown: "+e);
 		}
 		
 		return result;
