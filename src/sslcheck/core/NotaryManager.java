@@ -198,7 +198,7 @@ public class NotaryManager extends Notary {
 				notaryRating.addRating(tls.hashCode(), n.getNotaryName(),
 						n.check(tls));
 			}catch(NotaryException e) {
-				log.info("Error while checking Notary "+n.getNotaryName()+". Will ommit notary.");
+				log.info("Error while checking Notary "+n.getNotaryName()+". Will ommit notary. "+e);
 			}
 			log.trace("-- END -- Checking notary " + n.getNotaryName());
 		}
