@@ -9,7 +9,8 @@ public class NotaryRating {
 
 	private NotaryConfiguration notaryConf;
 	private static NotaryRating instance = null;
-	private HashMap<Integer, Float> ratings = new HashMap<Integer, Float>();
+	private HashMap<Integer, HashMap<String, Float>> ratings = new HashMap<Integer, HashMap<String, Float>>(); // <ConnectionID,
+																												// CumulatedRating>
 
 	private final static Logger log = LogManager.getLogger("core.NotaryRating");
 
@@ -60,13 +61,15 @@ public class NotaryRating {
 
 			synchronized (this.ratings) {
 				if (this.ratings.containsKey(i)) {
-					float r = this.ratings.get(i);
-					r += f * ratingFactor;
-					r /= 2;
-					this.ratings.put(i, r);
-				} else {
+					HashMap<String, Float> rs = this.ratings.get(i);
 					float r = f * ratingFactor;
-					this.ratings.put(i, r);
+					rs.put(notary, r);
+					this.ratings.put(i, rs);
+				} else {
+					HashMap<String, Float> rs = new HashMap<String, Float>();
+					float r = f * ratingFactor;
+					rs.put(notary, r);
+					this.ratings.put(i, rs);
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -88,17 +91,22 @@ public class NotaryRating {
 		}
 	}
 
-	@Deprecated
 	public float calculateScore(int h) throws NotaryRatingException {
 		return this.getScore(h);
 	}
 
 	public float getScore(int i) throws NotaryRatingException {
 		float r = 0;
-		if (this.ratings.size() > 0)
-			r = this.ratings.get(i);
-		else
-			throw new NotaryRatingException("There were no notaries to calculate a valid score.");
+		if (this.ratings.get(i) != null && this.ratings.get(i).size() > 0) {
+			HashMap<String, Float> rs = this.ratings.get(i);
+			for (float rating : rs.values()) {
+				// Calculate cumulative result
+				r += rating;
+			}
+			r /= this.ratings.get(i).size();
+		} else
+			throw new NotaryRatingException(
+					"There were no notaries to calculate a valid score.");
 		// this.ratings.remove(i);
 		return r;
 	}
@@ -134,12 +142,47 @@ public class NotaryRating {
 			int max = Integer.parseInt(this.notaryConf.getValue("maxRating"));
 			float trustLimit = Float.parseFloat(this.notaryConf
 					.getValue("trustLimit"));
+			String trustMode = this.notaryConf.getValue("trustMode");
+			float threshold = max * trustLimit;
 			synchronized (this.ratings) {
-					return this.getScore(ident) > max * trustLimit;
+				if (this.ratings.get(ident) != null
+						&& this.ratings.get(ident).size() > 0) {
+					boolean minority = false, consensus = false, majority = false;
+					int countMaj = this.ratings.get(ident).size() / 2;
+					if (this.ratings.get(ident).size() % 2 == 1)
+						countMaj++;
+					int countTrust = 0;
+					for (Float rating : this.ratings.get(ident).values()) {
+						if (rating >= threshold) {
+							minority = true;
+							countTrust++;
+							if (countTrust > countMaj) {
+								majority = true;
+							}
+							if (countTrust == this.ratings.get(ident).size()) {
+								consensus = true;
+							}
+						}
+
+					}
+					switch (trustMode) {
+					case "minority":
+						return minority;
+					case "majority":
+						return majority;
+					case "consensus":
+						return consensus;
+					default:
+						return false;
+					}
+				} else
+					throw new NotaryRatingException(
+							"No ratings available to decide trustworthyness.");
 			}
 		} catch (NumberFormatException e) {
 			log.error("Error converting value to int or float in isPossiblyTrusted");
-			throw new NotaryRatingException("Internal Error -> not decidable: "+e);
+			throw new NotaryRatingException("Internal Error -> not decidable: "
+					+ e);
 		} catch (NotaryConfigurationException e) {
 			log.error("Error reading maxRating/trustLimit from Configuration in isPossiblyTrusted.");
 			throw new NotaryRatingException("Internal Error -> not decidable!");
