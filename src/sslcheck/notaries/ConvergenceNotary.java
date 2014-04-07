@@ -55,7 +55,7 @@ public class ConvergenceNotary extends Notary {
 		log.trace("-- BEGIN -- ConvergenceNotary.check() ");
 		String convergenceCompatibleHash = this.convertHash(c
 				.getSHA1Fingerprint());
-		log.info("Checking Certificate for " + h + "+" + Integer.toString(port)
+		log.debug("Checking Certificate for " + h + "+" + Integer.toString(port)
 				+ " using hash " + convergenceCompatibleHash.substring(0, 29)
 				+ "... ");
 
@@ -99,7 +99,7 @@ public class ConvergenceNotary extends Notary {
 
 					log.debug(notaryURL + ": Status "
 							+ Integer.toString(data.getStatus()) + " | Body: "
-							+ json + "...");
+							+ json.substring(0,25) + "...");
 
 					// See documentation for details
 					if (status == 400 || status == 503) {
@@ -147,8 +147,8 @@ public class ConvergenceNotary extends Notary {
 
 			result = 10;
 
-		} else if (successCount <= 0 || decisionMethod.equals("consensus") // Consensus
-				&& (successCount > checkedNotaryCount)) {
+		} else if (successCount <= 0 || (decisionMethod.equals("consensus") // Consensus
+				&& (successCount < checkedNotaryCount))) {
 
 			result = 0;
 
