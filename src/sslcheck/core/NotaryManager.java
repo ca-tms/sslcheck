@@ -193,8 +193,13 @@ public class NotaryManager extends Notary {
 	public float check(TLSConnectionInfo tls) throws NotaryException {
 		for (Notary n : this.enabledNotaries) {
 			log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
+			// We need to catch NotaryException here to handle single notary exceptions.
+			try{
 				notaryRating.addRating(tls.hashCode(), n.getNotaryName(),
 						n.check(tls));
+			}catch(NotaryException e) {
+				log.info("Error while checking Notary "+n.getNotaryName()+". Will ommit notary.");
+			}
 			log.trace("-- END -- Checking notary " + n.getNotaryName());
 		}
 		return notaryRating.getScore(tls.hashCode());
