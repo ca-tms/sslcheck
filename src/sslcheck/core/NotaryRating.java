@@ -167,10 +167,13 @@ public class NotaryRating {
 					}
 					switch (trustMode) {
 					case "minority":
+						log.debug("TrustMode is minority.");
 						return minority;
 					case "majority":
+						log.debug("TrustMode is majority.");
 						return majority;
 					case "consensus":
+						log.debug("TrustMode is consensus.");
 						return consensus;
 					default:
 						return false;
