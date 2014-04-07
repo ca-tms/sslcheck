@@ -118,12 +118,12 @@ public class ConvergenceNotary extends Notary {
 
 					} else if (status == 409) {
 
-						log.info(String.format(
+						log.debug(String.format(
 								"%s: POSSIBLE SECURITY PROBLEM!!!", notaryURL));
 
 					} else {
 
-						log.info(String.format(
+						log.debug(String.format(
 								"%s: Received unknown status code!", notaryURL));
 
 					}
@@ -152,6 +152,7 @@ public class ConvergenceNotary extends Notary {
 		} else if (successCount <= 0 || (decisionMethod.equals("consensus") // Consensus
 				&& (successCount < checkedNotaryCount))) {
 			
+			log.info("Minority/Consensus Voting unsuccessful.");
 			result = 0;
 
 		} else { // Majority
@@ -162,6 +163,8 @@ public class ConvergenceNotary extends Notary {
 			if (successCount >= maj) {
 				log.info("Majority/Consensus Voting successful.");
 				result = 10;
+			}else{
+				log.info("Majority Voting unsuccessful.");
 			}
 
 		}

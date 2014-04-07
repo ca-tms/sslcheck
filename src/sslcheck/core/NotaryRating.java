@@ -31,7 +31,7 @@ public class NotaryRating {
 		try {
 
 			if (this.notaryConf.getValue("countable", notary).equals("false")) {
-				log.debug("Rating for " + notary + " not added.");
+				log.info("Rating for " + notary + " not added.");
 				return;
 			}
 
