@@ -224,10 +224,10 @@ public class ICSINotary extends Notary {
 					}
 					result += result_last + result_first + result_times;
 				}
-				log.debug("Calculated score: " + result);
+				log.info("Calculated score: " + result+"/"+this.getParam("maxRating"));
 				log.trace("--- DONE --- Checking TXT-RR.");
 			} else {
-				log.error("Received NXDOMAIN for Hash " + hash + ".");
+				log.info("Received NXDOMAIN for Hash " + hash + ".");
 				log.trace("--- DONE --- Checking A-RR");
 			}
 			log.trace("-- DONE -- ICSINotary.check() ");
