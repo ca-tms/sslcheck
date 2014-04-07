@@ -113,8 +113,8 @@ public class SSLObservatoryNotary extends Notary {
 			log.error("Java Exception thrown: "+e);
 			throw new NotaryException("Java Exception thrown: "+e);
 		} catch (Exception e) {
-			log.error("General Exception thrown: "+e);
-			throw new NotaryException("General Exception thrown: "+e);
+			log.debug("General Exception thrown: "+e);
+			throw new NotaryException(e.toString());
 		}
 		
 		return result;
