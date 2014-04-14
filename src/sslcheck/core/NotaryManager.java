@@ -68,7 +68,8 @@ public class NotaryManager extends Notary {
 
 					// Get TrustManagers if available
 					if (n.hasTrustManager()) {
-						log.debug("Adding TrustManager for "+n.getNotaryName());
+						log.debug("Adding TrustManager for "
+								+ n.getNotaryName());
 						trustManagers.add(n.getTrustManager());
 					}
 
@@ -78,22 +79,40 @@ public class NotaryManager extends Notary {
 				}
 			}
 			// Add TrustManagers
-			
+
 			this.setTrustManager(new X509TrustManager() {
 
 				@Override
 				public void checkClientTrusted(X509Certificate[] arg0,
 						String arg1) throws CertificateException {
+					int unsuccessful = 0;
 					for (X509TrustManager tm : trustManagers)
-						tm.checkClientTrusted(arg0, arg1);
-
+						try {
+							tm.checkClientTrusted(arg0, arg1);
+						} catch (CertificateException e) {
+							unsuccessful++;
+						}
+					if (unsuccessful == trustManagers.size()) {
+						throw new CertificateException(
+								"No TrustManager found for this certificate.");
+					}
 				}
 
 				@Override
 				public void checkServerTrusted(X509Certificate[] arg0,
 						String arg1) throws CertificateException {
-					for (X509TrustManager tm : trustManagers)
-						tm.checkServerTrusted(arg0, arg1);
+					int unsuccessful = 0;
+					for (X509TrustManager tm : trustManagers) {
+						try {
+							tm.checkServerTrusted(arg0, arg1);
+						} catch (CertificateException e) {
+							unsuccessful++;
+						}
+					}
+					if (unsuccessful == trustManagers.size()) {
+						throw new CertificateException(
+								"No TrustManager found for this certificate.");
+					}
 
 				}
 
@@ -101,9 +120,9 @@ public class NotaryManager extends Notary {
 				public X509Certificate[] getAcceptedIssuers() {
 					ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
 					X509Certificate[] accIss;
-					for (X509TrustManager tm : trustManagers){
+					for (X509TrustManager tm : trustManagers) {
 						accIss = tm.getAcceptedIssuers();
-						if(accIss != null && accIss.length > 0)
+						if (accIss != null && accIss.length > 0)
 							for (X509Certificate c : accIss)
 								certs.add(c);
 					}
@@ -175,7 +194,7 @@ public class NotaryManager extends Notary {
 			log.trace("Adding notary " + n.getNotaryName());
 			this.notaries.add(n);
 			this.enabledNotaries.add(n); // All notaries enabled by default
-		}else{
+		} else {
 			log.error("Notary was not added, because there Object was null or name was not set.");
 		}
 	}
@@ -187,18 +206,20 @@ public class NotaryManager extends Notary {
 	 *            Information regarding the tls connection, e.g. certificates,
 	 *            host, port
 	 * @return Validity score
-	 * @throws NotaryException  
+	 * @throws NotaryException
 	 */
 	@Override
 	public float check(TLSConnectionInfo tls) throws NotaryException {
 		for (Notary n : this.enabledNotaries) {
 			log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
-			// We need to catch NotaryException here to handle single notary exceptions.
-			try{
+			// We need to catch NotaryException here to handle single notary
+			// exceptions.
+			try {
 				notaryRating.addRating(tls.hashCode(), n.getNotaryName(),
 						n.check(tls));
-			}catch(NotaryException e) {
-				log.info("Error while checking Notary "+n.getNotaryName()+". Will ommit notary. "+e);
+			} catch (NotaryException e) {
+				log.info("Error while checking Notary " + n.getNotaryName()
+						+ ". Will ommit notary. " + e);
 			}
 			log.trace("-- END -- Checking notary " + n.getNotaryName());
 		}
