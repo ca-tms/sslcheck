@@ -1,7 +1,8 @@
 package sslcheck.notaries;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.security.cert.Certificate;
@@ -34,6 +35,8 @@ public class CrossbearNotary extends Notary {
 
 			public void checkServerTrusted(final X509Certificate[] chain,
 					final String authType) {
+				if(chain.length>0 && chain[0] != null)
+					log.debug("Checking Crossbear TrustManager: "+chain[0].getSubjectDN());
 			}
 
 			public X509Certificate[] getAcceptedIssuers() {
@@ -76,22 +79,36 @@ public class CrossbearNotary extends Notary {
 
 			conn.setDoOutput(true);
 
-			OutputStreamWriter wr = new OutputStreamWriter(
-					conn.getOutputStream());
-			wr.write(new String(req.getBytes()));
-			wr.flush();
-
+			OutputStream os = conn.getOutputStream();
+			
+			os.write(req.getBytes());
+			os.flush();
+			
 			if (conn.getResponseCode() >= 400)
 				throw new NotaryException("ResponseCode > 400: "
 						+ Message.inputStreamToString(conn.getInputStream()));
 
-			// First byte represents score
-			int result = Message.byteArrayToInt(Message.readNBytesFromStream(
-					conn.getInputStream(), 1));
+			log.debug("Received response code: " + conn.getResponseCode());
+			
+			InputStream bin = conn.getInputStream(); // Actually sends the data..
+			
+			// Throw away garbage data...
+			// - int msgType
+			Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
+			// - int length
+			Message.byteArrayToInt(Message.readNBytesFromStream(bin, 2));
+			// Result seems to be fourth byte..
+			int result = Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
 
-			log.info("Received response: " + Integer.toString(result));
-
-			return (float) result;
+			log.info("Score: "+String.valueOf(result));
+			
+			String res = Message.inputStreamToString(bin);
+			log.debug("Received response: " + String.valueOf(res));
+			
+			os.close();
+			bin.close();
+			
+			return result;
 
 		} catch (ClassCastException | IOException
 				| MessageSerializationException e) {
