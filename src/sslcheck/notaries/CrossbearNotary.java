@@ -92,14 +92,21 @@ public class CrossbearNotary extends Notary {
 			
 			InputStream bin = conn.getInputStream(); // Actually sends the data..
 			
-			// Throw away garbage data...
+			//parse CertVerifyResult message: 1 byte Message ID
+			//2 bytes length
+			//1 byte rating
+			//the rest is the report as string.
 			// - int msgType
-			Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
+			@SuppressWarnings("unused")
+			int id=Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
 			// - int length
-			Message.byteArrayToInt(Message.readNBytesFromStream(bin, 2));
-			// Result seems to be fourth byte..
+			int len= Message.byteArrayToInt(Message.readNBytesFromStream(bin, 2));
+			// Result: fourth byte
 			int result = Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
-
+			// - String report
+			@SuppressWarnings("unused")
+			String report= new String(Message.readNBytesFromStream(bin, len-4));
+			
 			log.info("Score: "+String.valueOf(result));
 			
 			String res = Message.inputStreamToString(bin);
@@ -107,6 +114,10 @@ public class CrossbearNotary extends Notary {
 			
 			os.close();
 			bin.close();
+			
+			//workaround, trust is proposed from rating 100 onwards
+			if(result>150)
+				return 150;
 			
 			return result;
 
