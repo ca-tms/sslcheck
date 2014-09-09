@@ -146,11 +146,12 @@ public class SSLObservatoryNotary extends Notary {
 				if (status == 200) {
 					log.info("Received 200. Everything ok.");
 					if (observatoryResult.equals("1")) {
-						log.debug("Observatory: Fingerprint unknown -> Certificate was added to database.");
+						log.debug("Observatory: Fingerprint unknown -> Certificate was added to the database.");
+						result = 5;
 					} else if (observatoryResult.equals("0")) {
-						log.debug("Observatory: Certificate was not added to database.");
-					}
-					result = 10;
+						log.debug("Observatory: Certificate already exists in the database.");
+						result = 10;
+					}	
 				} else if (status == 403) {
 					log.info("ATTENTION: Certificate was consided harmful.");
 					log.debug("Message: " + observatoryResult);
