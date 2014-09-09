@@ -131,7 +131,11 @@ public class CrossbearNotary extends Notary {
 			log.info("Score: " + String.valueOf(result));
 
 			String res = Message.inputStreamToString(bin);
-			log.debug("Received response: " + String.valueOf(res));
+			//log.debug("Received response: " + String.valueOf(res));
+			
+			if(res.matches("(?s).*<crit>.*</crit>(?s).*")) {
+				log.info("Response does contain CRIT-part!");
+			}
 
 			os.close();
 			bin.close();
