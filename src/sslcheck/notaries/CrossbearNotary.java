@@ -5,7 +5,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
@@ -16,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sslcheck.core.TLSConnectionInfo;
+import sslcheck.core.SSLUtil;
 import sslcheck.notaries.Crossbear.CertVerifyRequest;
 import sslcheck.notaries.Crossbear.Message;
 import sslcheck.notaries.Crossbear.MessageSerializationException;
@@ -29,14 +33,36 @@ public class CrossbearNotary extends Notary {
 	public void initialize() {
 		this.setTrustManager(new X509TrustManager() {
 
+			private String fingerprint = "86738EBCAD7129BAD09429E75F2C310A0B370A65";
+			private String returnMessage = "";
+
 			public void checkClientTrusted(final X509Certificate[] chain,
 					final String authType) {
 			}
 
 			public void checkServerTrusted(final X509Certificate[] chain,
-					final String authType) {
-				if(chain.length>0 && chain[0] != null)
-					log.debug("Checking Crossbear TrustManager: "+chain[0].getSubjectDN());
+					final String authType) throws CertificateException {
+				if (chain.length > 0 && chain[0] != null) {
+					log.debug("Checking Crossbear TrustManager: "
+							+ chain[0].getSubjectDN());
+					try {
+						if (SSLUtil.getFingerprint(chain[0], "SHA-1")
+								.toUpperCase()
+								.equals(fingerprint.toUpperCase())) {
+							log.debug("Crossbear TrustManager: Found certificate -> trusted!");
+							return;
+						}
+						log.debug("Crossbear TrustManager: Certificate not found in this TrustStore.");
+						returnMessage = "Crossbear TrustManager: Certificate not found.";
+					} catch (CertificateEncodingException e) {
+						log.debug("Crossbear TrustManager: Error: Certificate not in correct encoding!");
+						returnMessage = "Crossbear TrustManager: Checking TrustManager failed.";
+					} catch (NoSuchAlgorithmException e) {
+						log.debug("Crossbear TrustManager: Error: Certificate not in correct encoding!");
+						returnMessage = "Crossbear TrustManager: Error: Checking TrustManager failed.";
+					}
+					throw new CertificateException(returnMessage);
+				}
 			}
 
 			public X509Certificate[] getAcceptedIssuers() {
@@ -80,34 +106,36 @@ public class CrossbearNotary extends Notary {
 			conn.setDoOutput(true);
 
 			OutputStream os = conn.getOutputStream();
-			
+
 			os.write(req.getBytes());
 			os.flush();
-			
+
 			if (conn.getResponseCode() >= 400)
 				throw new NotaryException("ResponseCode > 400: "
 						+ Message.inputStreamToString(conn.getInputStream()));
 
 			log.debug("Received response code: " + conn.getResponseCode());
-			
-			InputStream bin = conn.getInputStream(); // Actually sends the data..
-			
+
+			InputStream bin = conn.getInputStream(); // Actually sends the
+														// data..
+
 			// Throw away garbage data...
 			// - int msgType
 			Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
 			// - int length
 			Message.byteArrayToInt(Message.readNBytesFromStream(bin, 2));
 			// Result seems to be fourth byte..
-			int result = Message.byteArrayToInt(Message.readNBytesFromStream(bin, 1));
+			int result = Message.byteArrayToInt(Message.readNBytesFromStream(
+					bin, 1));
 
-			log.info("Score: "+String.valueOf(result));
-			
+			log.info("Score: " + String.valueOf(result));
+
 			String res = Message.inputStreamToString(bin);
 			log.debug("Received response: " + String.valueOf(res));
-			
+
 			os.close();
 			bin.close();
-			
+
 			return result;
 
 		} catch (ClassCastException | IOException
