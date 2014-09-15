@@ -7,10 +7,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -45,8 +45,8 @@ public class PerspectivesNotary extends Notary {
 	}
 
 	public static class Timestamp {
-		@XmlAttribute(name="start") public int start;
-		@XmlAttribute(name="end") public int end;
+		@XmlAttribute(name="start") public long start;
+		@XmlAttribute(name="end") public long end;
 	}
 
 	private final static Logger log = LogManager
@@ -128,6 +128,11 @@ public class PerspectivesNotary extends Notary {
 
 		log.trace("-- BEGIN -- PerspectivesNotary.check()");
 
+		final long quorumNotariesCount = Long.valueOf(getParam("quorum.notariesCount"));
+		final long quorumDurationMillis = Long.valueOf(getParam("quorum.durationMillis"));
+		final long quorumDistanceMillis = Long.valueOf(getParam("quorum.distanceMillis"));
+		final String fingerprint = tls.getCertificates().getMD5Fingerprint().toLowerCase();
+
 		// initialize request parameters
 		String host = tls.getRemoteHost();
 		int port = tls.getRemotePort();
@@ -143,6 +148,7 @@ public class PerspectivesNotary extends Notary {
 		for (String notaryHost : notaryHosts)
 			futures.add(client
 				.asyncResource(notaryHost)
+				.path("/")
 				.queryParam("host", host)
 				.queryParam("port", String.valueOf(port))
 				.queryParam("service_type", String.valueOf(serviceType))
@@ -214,8 +220,8 @@ public class PerspectivesNotary extends Notary {
 								observation.fingerprint.substring(k, k + 2), 16));
 
 				for (Timestamp timestamp : observation.timestamps) {
-					buffer.putInt(timestamp.start);
-					buffer.putInt(timestamp.end);
+					buffer.putInt((int) timestamp.start);
+					buffer.putInt((int) timestamp.end);
 				}
 			}
 
@@ -223,20 +229,43 @@ public class PerspectivesNotary extends Notary {
 			byte[] data = new byte[buffer.limit()];
 			buffer.get(data);
 
-			if (verifySignature(key, reply.signature, data)) {
+			if (verifySignature(key, reply.signature, data))
 				responses.add(reply);
-				System.out.println("good");
-			}
 			else
 				log.info("Signature from " + notaryHosts.get(i) +
 				         " could not be verified");
 		}
 
-		for (NotaryReply response : responses) {
-			// TODO: interpret responses
-		}
+		// count notaries which satisfy the quorum duration constraint
+		// and check if the count satisfies the quorum count constraint
+		float count = 0;
+		long nowMillis = new Date().getTime();
+		for (NotaryReply response : responses)
+			for (Observation observation : response.observations)
+				if (observation.fingerprint.equals(fingerprint)) {
+					float score = 0;
+					for (Timestamp timestamp : observation.timestamps) {
+						// convert timestamps from s to ms
+						long start = timestamp.start * 1000;
+						long end = timestamp.end * 1000;
+
+						// For every notary that has seen the certificate
+						// for the quorum duration time span, increment count
+						// by one.
+						// Additionally, for every notary that has seen the
+						// certificate for a fraction of the quorum duration
+						// time span, increment count by that fraction.
+						if (nowMillis - end <= quorumDistanceMillis)
+							score = Math.max(score, Math.min(1,
+									(float) (end - start) / quorumDurationMillis));
+					}
+					count += score;
+					break;
+				}
+		count = Math.min(1, count / quorumNotariesCount);
 
 		log.trace("-- BEGIN -- PerspectivesNotary.check()");
-		return 0;
+
+		return Math.min(1, count);
 	}
 }
