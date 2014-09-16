@@ -264,8 +264,9 @@ public class PerspectivesNotary extends Notary {
 				}
 		count = Math.min(1, count / quorumNotariesCount);
 
+		log.info("Score: " + count);
 		log.trace("-- BEGIN -- PerspectivesNotary.check()");
 
-		return Math.min(1, count);
+		return count;
 	}
 }
