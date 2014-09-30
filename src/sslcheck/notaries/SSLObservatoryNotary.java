@@ -36,15 +36,17 @@ public class SSLObservatoryNotary extends Notary {
 
 		this.setTrustManager(new X509TrustManager() {
 
+			@Override
 			public void checkClientTrusted(final X509Certificate[] chain,
 					final String authType) {
 			}
 
+			@Override
 			public void checkServerTrusted(final X509Certificate[] chain,
 					final String authType) throws CertificateException {
-				
+
 				final String[] base64Certificates = {"MIIJiTCCCHGgAwIBAgIDAYLpMA0GCSqGSIb3DQEBBQUAMIGMMQswCQYDVQQGEwJJTDEWMBQGA1UEChMNU3RhcnRDb20gTHRkLjErMCkGA1UECxMiU2VjdXJlIERpZ2l0YWwgQ2VydGlmaWNhdGUgU2lnbmluZzE4MDYGA1UEAxMvU3RhcnRDb20gQ2xhc3MgMiBQcmltYXJ5IEludGVybWVkaWF0ZSBTZXJ2ZXIgQ0EwHhcNMTMwNzE2MTQyOTEwWhcNMTUwNzE3MDc1NTIyWjCB0zEZMBcGA1UEDRMQdzR2eGFmNVlQNkhReTBYdDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xLTArBgNVBAoTJEVsZWN0cm9uaWMgRnJvbnRpZXIgRm91bmRhdGlvbiwgSW5jLjEeMBwGA1UEAxQVKi50cm9sbGluZ2VmZmVjdHMub3JnMS0wKwYJKoZIhvcNAQkBFh5ob3N0bWFzdGVyQHRyb2xsaW5nZWZmZWN0cy5vcmcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDNd0G/DNQ7pEvA/03gkER0k92v59PVEj0MkiRUpAzwaOk+hVvYahy76xv9FJ8V5xacBZypk6dOx5+FxB3BI+2XPcKim752O8P3eetdl2IexNTwxK72TZ1po9ZnRvs4EcQl6edeQc+YSPCWRhQlQEHyefxEUoNjLIfbmrKgAiabL24ddJGyzeDIPa4e00PexJyR2uezFmW/Y5R4rpxO9v5wp188wixLZmaaJSk3c5O8h5SUEnjkQ6JTQSwwaMVQqtfsIGaQg/8duTn3LfTF1kkC/cfnQXPHONY7CQ3Ru8RZOuK3B4MC32YfJYzAZopAY80Kfw4y8h5MLM+pYh1ISvJfrD6+PevnZwiyTkjuoiNr0D9WGVrZGXMRjy9jcBD0GTGlqu6XE9mAxetx9psmg959+OoMFOxjKWBJvwVUyo1cf2W3ORLzeSZXP7XZAr16S58TU3ePA5sA9lPyqrz0prdxQRGTW1S1MAPvmfGHiPmW++tMPTe69i/mpPTfnAlUx3AHeuuoRdgha0aPrXFW+yfleHWaAbziNf2TzcjUB9OOahFWmVkByVlZ135/GuEZAVHjhQwYhqP8JVSVTFo5BG8hQP1sVRmcT9OMBbqKjDea65K0Bpo3lxapf/FDlxp/oCIVyIVksgB38tM5vOyEMJm3tS2r0yDbwJNctED6jDh0AQIDAQABo4IEqTCCBKUwCQYDVR0TBAIwADALBgNVHQ8EBAMCA6gwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMB0GA1UdDgQWBBQdMeMKwFW5cJ+byJSspXrMQussrzAfBgNVHSMEGDAWgBQR2yNF/VTManFvhIoD1773AS8mhjCCAeMGA1UdEQSCAdowggHWghUqLnRyb2xsaW5nZWZmZWN0cy5vcmeCE3Ryb2xsaW5nZWZmZWN0cy5vcmeCE2NvcHlyaWdodC13YXRjaC5vcmeCFSouY29weXJpZ2h0LXdhdGNoLm9yZ4IVKi5jb3B5cmlnaHQtd2F0Y2gub3JnghRkZWZlbmRpbm5vdmF0aW9uLm9yZ4IVKi50cm9sbGluZ2VmZmVjdHMub3JnghYqLmRlZmVuZGlubm92YXRpb24ub3JnggdlZmYub3JnggkqLmVmZi5vcmeCFWdsb2JhbGNob2tlcG9pbnRzLm9yZ4IXKi5nbG9iYWxjaG9rZXBvaW50cy5vcmeCG2phaWxicmVha2luZ2lzbm90YWNyaW1lLm9yZ4IdKi5qYWlsYnJlYWtpbmdpc25vdGFjcmltZS5vcmeCHW5lY2Vzc2FyeWFuZHByb3BvcnRpb25hdGUubmV0gh8qLm5lY2Vzc2FyeWFuZHByb3BvcnRpb25hdGUubmV0gh1uZWNlc3NhcnlhbmRwcm9wb3J0aW9uYXRlLm9yZ4IOcmlwbWl4bWFrZS5vcmeCECoucmlwbWl4bWFrZS5vcmeCHyoubmVjZXNzYXJ5YW5kcHJvcG9ydGlvbmF0ZS5vcmcwggFWBgNVHSAEggFNMIIBSTAIBgZngQwBAgIwggE7BgsrBgEEAYG1NwECAzCCASowLgYIKwYBBQUHAgEWImh0dHA6Ly93d3cuc3RhcnRzc2wuY29tL3BvbGljeS5wZGYwgfcGCCsGAQUFBwICMIHqMCcWIFN0YXJ0Q29tIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MAMCAQEagb5UaGlzIGNlcnRpZmljYXRlIHdhcyBpc3N1ZWQgYWNjb3JkaW5nIHRvIHRoZSBDbGFzcyAyIFZhbGlkYXRpb24gcmVxdWlyZW1lbnRzIG9mIHRoZSBTdGFydENvbSBDQSBwb2xpY3ksIHJlbGlhbmNlIG9ubHkgZm9yIHRoZSBpbnRlbmRlZCBwdXJwb3NlIGluIGNvbXBsaWFuY2Ugb2YgdGhlIHJlbHlpbmcgcGFydHkgb2JsaWdhdGlvbnMuMDUGA1UdHwQuMCwwKqAooCaGJGh0dHA6Ly9jcmwuc3RhcnRzc2wuY29tL2NydDItY3JsLmNybDCBjgYIKwYBBQUHAQEEgYEwfzA5BggrBgEFBQcwAYYtaHR0cDovL29jc3Auc3RhcnRzc2wuY29tL3N1Yi9jbGFzczIvc2VydmVyL2NhMEIGCCsGAQUFBzAChjZodHRwOi8vYWlhLnN0YXJ0c3NsLmNvbS9jZXJ0cy9zdWIuY2xhc3MyLnNlcnZlci5jYS5jcnQwIwYDVR0SBBwwGoYYaHR0cDovL3d3dy5zdGFydHNzbC5jb20vMA0GCSqGSIb3DQEBBQUAA4IBAQAitW8P2SwcXb3+oazLsElTmgPquaSxz4zqlbpuQDBE7Zhfe+bjYlmNRqS1e+w4twaXtxEXoCS1LcGx9FHpSE4xSTpxGOYPl60f98qBgG4Gy/ANkagxGjMNHua5DkesiKEKoURk2Mbt8t8SzkloyL0UEHS3vcjNVfU6arBe/Yw5+of4fo0d/f8heFLB1d7XtvH32YO+o/Q/nAqJYuljh/0ShbZUypBWopC9o1zXEJfKqugQJkCiIm0Y0hULRZB60aAS7E9Irhb4NH+N1Eo46ek9F5ZF/OH7jwelMPFtMfo+z8TXPflykQZATiAmRVL5Jbzx1g5Pm4iIzk2PWNUsjyHs"};
-				
+
 				if (chain.length > 0 && chain[0] != null) { // Server gibt mind.
 					// ein Zertifikat
 					// zurück
@@ -93,6 +95,7 @@ public class SSLObservatoryNotary extends Notary {
 				}
 			}
 
+			@Override
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
 			}
@@ -110,12 +113,14 @@ public class SSLObservatoryNotary extends Notary {
 				JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 		Client client = Client.create(jerseyClientConfig);
 
+		int timeout = Integer.valueOf(this.getParam("timeout"));
+		client.setConnectTimeout(timeout);
+		client.setReadTimeout(timeout);
+
 		float result = 0f;
 
 		try {
 
-			client.setConnectTimeout(Integer.valueOf(this
-					.getParam("serverTimeout")));
 			WebResource service = client
 					.resource("https://observatory.eff.org/");
 
@@ -161,6 +166,7 @@ public class SSLObservatoryNotary extends Notary {
 
 			}
 
+			log.info("Score: " + result);
 			log.trace("-- END -- SSLObervatory.check()");
 
 		} catch (UnknownHostException | CertificateEncodingException e) {

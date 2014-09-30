@@ -142,6 +142,7 @@ public class PerspectivesNotary extends Notary {
 
 		Client client = Client.create();
 		client.setConnectTimeout(Integer.valueOf(getParam("timeout")));
+		client.setReadTimeout(Integer.valueOf(getParam("timeout")));
 
 		// perform asynchronous requests
 		List<Future<NotaryReply>> futures = new ArrayList<>(notaryHosts.size());
@@ -262,11 +263,11 @@ public class PerspectivesNotary extends Notary {
 					count += score;
 					break;
 				}
-		count = Math.min(1, count / quorumNotariesCount);
+		float result = Math.min(1, count / quorumNotariesCount);
 
-		log.info("Score: " + count);
+		log.info("Score: " + result);
 		log.trace("-- BEGIN -- PerspectivesNotary.check()");
 
-		return count;
+		return result;
 	}
 }

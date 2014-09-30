@@ -41,10 +41,12 @@ public class ConvergenceNotary extends Notary {
 
 		this.setTrustManager(new X509TrustManager() {
 
+			@Override
 			public void checkClientTrusted(final X509Certificate[] chain,
 					final String authType) {
 			}
 
+			@Override
 			public void checkServerTrusted(final X509Certificate[] chain,
 					final String authType) throws CertificateException {
 				if (chain.length > 0 && chain[0] != null) { // Server gibt mind.
@@ -95,6 +97,7 @@ public class ConvergenceNotary extends Notary {
 				}
 			}
 
+			@Override
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
 			}
@@ -120,6 +123,10 @@ public class ConvergenceNotary extends Notary {
 		jerseyClientConfig.getFeatures().put(
 				JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 		Client client = Client.create(jerseyClientConfig);
+
+		int timeout = Integer.valueOf(this.getParam("timeout"));
+		client.setConnectTimeout(timeout);
+		client.setReadTimeout(timeout);
 
 		String _configuredNotaries = this.getParam("notaries");
 		String configuredNotaries = (_configuredNotaries != null) ? _configuredNotaries
@@ -235,13 +242,14 @@ public class ConvergenceNotary extends Notary {
 
 		}
 
+		log.info("Score: " + result + "/" + this.getParam("maxRating"));
 		log.trace("-- DONE -- ConvergenceNotary.check() ");
 		return result;
 	}
 
 	/**
 	 * Formats a standard hash a2b3b5... to the format A2:B3:B5...
-	 * 
+	 *
 	 * @param h
 	 *            the Hash
 	 * @return

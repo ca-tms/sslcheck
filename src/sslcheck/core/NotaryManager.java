@@ -21,12 +21,12 @@ import sslcheck.notaries.NotaryException;
  * NotaryManager acts as a proxy class for normal notaries. It creates every
  * enabled notary-objects and calls the check-Method to check the certificate
  * the notaryManager gets from the caller itself.
- * 
+ *
  * It enables a caller to handle multiple notaries by just using one notary. It
  * itself can be used as a notary.
- * 
+ *
  * @author letzkus
- * 
+ *
  */
 public class NotaryManager extends Notary {
 
@@ -157,7 +157,7 @@ public class NotaryManager extends Notary {
 	/**
 	 * Enables a already existing notary. If you want to simply add a new
 	 * notary, use addNotary(Notary n).
-	 * 
+	 *
 	 * @param nn
 	 *            The name of a notary to be enabled.
 	 */
@@ -173,7 +173,7 @@ public class NotaryManager extends Notary {
 
 	/**
 	 * Disables a notary.
-	 * 
+	 *
 	 * @param nn
 	 *            the name of the notary to be disabled.
 	 */
@@ -189,7 +189,7 @@ public class NotaryManager extends Notary {
 
 	/**
 	 * Adds a new notary to the list of existing and enabled notaries.
-	 * 
+	 *
 	 * @param n
 	 *            the notary object to be added
 	 */
@@ -205,7 +205,7 @@ public class NotaryManager extends Notary {
 
 	/**
 	 * Checks the certificate by calling check-Method on all enabled Notaries
-	 * 
+	 *
 	 * @param tls Information regarding the tls connection, e.g. certificates,
 	 *            host, port
 	 * @return Validity score
@@ -226,7 +226,7 @@ public class NotaryManager extends Notary {
 					tasks.add(new Callable<Void>() {
 						@Override
 						public Void call() {
-							check(tls, 0, notary);
+							check(tls, id, notary);
 							return null; // dummy value for Void return type
 						}
 					});
@@ -256,9 +256,9 @@ public class NotaryManager extends Notary {
 	private void check(TLSConnectionInfo tls, int id, Notary notary) {
 		log.trace("-- BEGIN -- Checking notary " + notary.getNotaryName());
 		try {
-			notaryRating.addRating(tls.hashCode(), notary.getNotaryName(),
-					notary.check(tls));
-		} catch (NotaryException e) {
+			notaryRating.addRating(id, notary.getNotaryName(), notary.check(tls));
+		}
+		catch (NotaryException e) {
 			log.info("Error while checking Notary " + notary.getNotaryName()
 					+ ". Will ommit notary. " + e);
 		}
