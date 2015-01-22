@@ -76,6 +76,7 @@ public class NotaryManagerTest {
 		nm.disableNotary("ConvergenceNotary");
 		nm.disableNotary("SSLObservatoryNotary");
 		nm.disableNotary("CrossbearNotary");
+		nm.disableNotary("PerspectivesNotary");
 		return nm;
 	}
 	

@@ -46,7 +46,7 @@ public class SimpleTestUrl {
 		// NotaryConfiguration notaryConf = NotaryConfiguration.getInstance();
 		// NotaryRating notaryRating = NotaryRating.getInstance();
 
-		String[] hosts = { "https://saanet.sg/"
+		String[] hosts = { "https://www.comdirect.de/"
 		// , "https://www.cacert.org/"
 		};
 		for (String host : hosts) {

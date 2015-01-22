@@ -156,7 +156,7 @@ public class NotaryRating {
 						if (rating >= threshold) {
 							minority = true;
 							countTrust++;
-							if (countTrust > countMaj) {
+							if (countTrust >= countMaj) {
 								majority = true;
 							}
 							if (countTrust == this.ratings.get(ident).size()) {

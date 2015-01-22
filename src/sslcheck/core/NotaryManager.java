@@ -4,6 +4,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.X509TrustManager;
 
@@ -17,12 +21,12 @@ import sslcheck.notaries.NotaryException;
  * NotaryManager acts as a proxy class for normal notaries. It creates every
  * enabled notary-objects and calls the check-Method to check the certificate
  * the notaryManager gets from the caller itself.
- * 
+ *
  * It enables a caller to handle multiple notaries by just using one notary. It
  * itself can be used as a notary.
- * 
+ *
  * @author letzkus
- * 
+ *
  */
 public class NotaryManager extends Notary {
 
@@ -153,7 +157,7 @@ public class NotaryManager extends Notary {
 	/**
 	 * Enables a already existing notary. If you want to simply add a new
 	 * notary, use addNotary(Notary n).
-	 * 
+	 *
 	 * @param nn
 	 *            The name of a notary to be enabled.
 	 */
@@ -169,7 +173,7 @@ public class NotaryManager extends Notary {
 
 	/**
 	 * Disables a notary.
-	 * 
+	 *
 	 * @param nn
 	 *            the name of the notary to be disabled.
 	 */
@@ -185,7 +189,7 @@ public class NotaryManager extends Notary {
 
 	/**
 	 * Adds a new notary to the list of existing and enabled notaries.
-	 * 
+	 *
 	 * @param n
 	 *            the notary object to be added
 	 */
@@ -201,28 +205,63 @@ public class NotaryManager extends Notary {
 
 	/**
 	 * Checks the certificate by calling check-Method on all enabled Notaries
-	 * 
-	 * @param tls
-	 *            Information regarding the tls connection, e.g. certificates,
+	 *
+	 * @param tls Information regarding the tls connection, e.g. certificates,
 	 *            host, port
 	 * @return Validity score
 	 * @throws NotaryException
 	 */
 	@Override
-	public float check(TLSConnectionInfo tls) throws NotaryException {
-		for (Notary n : this.enabledNotaries) {
-			log.trace("-- BEGIN -- Checking notary " + n.getNotaryName());
-			// We need to catch NotaryException here to handle single notary
-			// exceptions.
+	public float check(final TLSConnectionInfo tls) throws NotaryException {
+		final int id = tls.hashCode();
+
+		if (!this.enabledNotaries.isEmpty() &&
+				this.notaryConf.getValue("concurrentChecks").equals("true"))
+		{
+			ExecutorService executor =
+					Executors.newFixedThreadPool(this.enabledNotaries.size());
 			try {
-				notaryRating.addRating(tls.hashCode(), n.getNotaryName(),
-						n.check(tls));
-			} catch (NotaryException e) {
-				log.info("Error while checking Notary " + n.getNotaryName()
-						+ ". Will ommit notary. " + e);
+				List<Callable<Void>> tasks = new ArrayList<>(this.enabledNotaries.size());
+				for (final Notary notary : this.enabledNotaries)
+					tasks.add(new Callable<Void>() {
+						@Override
+						public Void call() {
+							check(tls, id, notary);
+							return null; // dummy value for Void return type
+						}
+					});
+				executor.invokeAll(tasks);
 			}
-			log.trace("-- END -- Checking notary " + n.getNotaryName());
+			catch (InterruptedException e) {
+				throw new NotaryException("Concurrent notary queries interrupted");
+			}
+			finally {
+			    executor.shutdown();
+			}
 		}
-		return notaryRating.getScore(tls.hashCode());
+		else
+			for (Notary notary : this.enabledNotaries)
+				check(tls, 0, notary);
+
+		return notaryRating.getScore(id);
+	}
+
+	/**
+	 * Checks a single given notary for the given connection information and
+	 * adds the rating for the given id
+	 * @param tls
+	 * @param id
+	 * @param notary
+	 */
+	private void check(TLSConnectionInfo tls, int id, Notary notary) {
+		log.trace("-- BEGIN -- Checking notary " + notary.getNotaryName());
+		try {
+			notaryRating.addRating(id, notary.getNotaryName(), notary.check(tls));
+		}
+		catch (NotaryException e) {
+			log.info("Error while checking Notary " + notary.getNotaryName()
+					+ ". Will ommit notary. " + e);
+		}
+		log.trace("-- END -- Checking notary " + notary.getNotaryName());
 	}
 }

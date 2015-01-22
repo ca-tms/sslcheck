@@ -38,12 +38,12 @@ public class ICSINotary extends Notary {
 		_tmp = this.getParam("firstSeenOptimalThreshold");
 		int firstSeenOptimalThreshold = (_tmp != null) ? Integer.parseInt(_tmp)
 				: 1; // 365
-		
+
 		log.debug("CONFIGURAION:");
 		log.debug("lastSeenThreshold: "+lastSeenThreshold);
 		log.debug("firstSeenMinThreshold: "+firstSeenMinThreshold);
 		log.debug("lastSeenOptimalThreshold: "+firstSeenOptimalThreshold);
-		
+
 		_tmp = null;
 
 		try {
@@ -224,7 +224,7 @@ public class ICSINotary extends Notary {
 					}
 					result += result_last + result_first + result_times;
 				}
-				log.info("Calculated score: " + result+"/"+this.getParam("maxRating"));
+				log.info("Score: " + result + "/" +this.getParam("maxRating"));
 				log.trace("--- DONE --- Checking TXT-RR.");
 			} else {
 				log.info("Received NXDOMAIN for Hash " + hash + ".");
